@@ -1,0 +1,1616 @@
+{
+ "about": "ReefWatch bleaching benchmark: 100 CoralNet survey photos from reef sites held out of all training and model selection, 20 per location, with hand-corrected 7-class masks. Test only: never train or tune on these.",
+ "mask_ids": {
+  "1": "BLEACHED",
+  "2": "DEAD",
+  "3": "ALIVE",
+  "4": "ROCK",
+  "5": "OCEAN",
+  "6": "SAND",
+  "7": "OTHER",
+  "255": "IGNORE"
+ },
+ "mask_geometry": "masks are stored at the resolution they were edited at; resize to the photo size with nearest-neighbour before use (eval/evaluate.py does this)",
+ "photos": [
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164897,
+   "page_url": "https://coralnet.ucsd.edu/image/4164897/view/",
+   "original_name": "IMG_0425.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "00f47474c22f73faa8f46e64f848ac39db9d9204253ce55c93a1c7bac5e1f0a9",
+   "mask": "masks/kenya/4164897.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164898,
+   "page_url": "https://coralnet.ucsd.edu/image/4164898/view/",
+   "original_name": "IMG_0426.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "1351cdc9c37e21543c50db03c9c63c6b5421632c106cd32ef39498e05eee6285",
+   "mask": "masks/kenya/4164898.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164902,
+   "page_url": "https://coralnet.ucsd.edu/image/4164902/view/",
+   "original_name": "IMG_0430.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "4083fe75788e960548448d4d0d2a5e6b69d9cd2d99eaedc720fcb36dee3ee324",
+   "mask": "masks/kenya/4164902.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164903,
+   "page_url": "https://coralnet.ucsd.edu/image/4164903/view/",
+   "original_name": "IMG_0431.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "6f52378ba6e0807079cb1266967442fc2e49b4c6d6393fdc8739651611fc4d29",
+   "mask": "masks/kenya/4164903.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164904,
+   "page_url": "https://coralnet.ucsd.edu/image/4164904/view/",
+   "original_name": "IMG_0432.jpeg",
+   "width": 3000,
+   "height": 4000,
+   "sha256": "7cda0c8a9fd7d9442038cbf1b884d382f15b2c1f9df8d7b411b8dad071130ee8",
+   "mask": "masks/kenya/4164904.png",
+   "mask_size": [
+    1536,
+    2048
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164905,
+   "page_url": "https://coralnet.ucsd.edu/image/4164905/view/",
+   "original_name": "IMG_0433.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "d64c32ee16df4a59532f90ce9a4b96740800f67c1555c6b5b833bda358df55a2",
+   "mask": "masks/kenya/4164905.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164906,
+   "page_url": "https://coralnet.ucsd.edu/image/4164906/view/",
+   "original_name": "IMG_0434.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "4b162aa1e29d13a8faa02e55b94abdacb59d30d597b3f6e71fab3ca788c3314e",
+   "mask": "masks/kenya/4164906.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164907,
+   "page_url": "https://coralnet.ucsd.edu/image/4164907/view/",
+   "original_name": "IMG_0435.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "dd55b100806d6f6076a11bb9448c2b849cd3430342c4a82be7ba82b180272bf7",
+   "mask": "masks/kenya/4164907.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164908,
+   "page_url": "https://coralnet.ucsd.edu/image/4164908/view/",
+   "original_name": "IMG_0436.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "7fb4f8e36a7a222cc83e4c07868316b1ac8571ca23e5a79d38775439097c2693",
+   "mask": "masks/kenya/4164908.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164909,
+   "page_url": "https://coralnet.ucsd.edu/image/4164909/view/",
+   "original_name": "IMG_0437.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "e2d5d447673ee5fa1224888c40c5bd1dcfc41cc25e6a8ea722c42266b4b7b15c",
+   "mask": "masks/kenya/4164909.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164910,
+   "page_url": "https://coralnet.ucsd.edu/image/4164910/view/",
+   "original_name": "IMG_0438.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "802df2266765ccafad8103ef2cb98f02c9e1c98f5866e14400db234b1b31fa85",
+   "mask": "masks/kenya/4164910.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164912,
+   "page_url": "https://coralnet.ucsd.edu/image/4164912/view/",
+   "original_name": "IMG_0440.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "5300e64bab436ae9d2b2d5293b0b5b815120137433a8291a6e3bd4a562fc531a",
+   "mask": "masks/kenya/4164912.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164913,
+   "page_url": "https://coralnet.ucsd.edu/image/4164913/view/",
+   "original_name": "IMG_0441.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "abe6b238ae1d48c54f0ebf79d83cc3ee6cd41954c998f9ee7178fe631b9ef453",
+   "mask": "masks/kenya/4164913.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164915,
+   "page_url": "https://coralnet.ucsd.edu/image/4164915/view/",
+   "original_name": "IMG_0443.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "1dd75f43f6666a462043e0fccc87d5d8b34508113b833f491990eb6951a2a74e",
+   "mask": "masks/kenya/4164915.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164916,
+   "page_url": "https://coralnet.ucsd.edu/image/4164916/view/",
+   "original_name": "IMG_0444.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "83680d856da8d8fa5dc02b515b759c62cb29ca1822869c3bac5b1407cef04c63",
+   "mask": "masks/kenya/4164916.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164919,
+   "page_url": "https://coralnet.ucsd.edu/image/4164919/view/",
+   "original_name": "IMG_0447.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "4c8be3062643fdd1a66c8acf42c002473701f0c855132eb0008bf158231f18d9",
+   "mask": "masks/kenya/4164919.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164921,
+   "page_url": "https://coralnet.ucsd.edu/image/4164921/view/",
+   "original_name": "IMG_0449.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "80b654d6c897e3330e552a5c68016d47e0f2069877a401acbc160256622c5b23",
+   "mask": "masks/kenya/4164921.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164922,
+   "page_url": "https://coralnet.ucsd.edu/image/4164922/view/",
+   "original_name": "IMG_0450.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "650f3881957a25f65e82fe858764f659ddfe4489052398f72e5ba5ead511885e",
+   "mask": "masks/kenya/4164922.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164924,
+   "page_url": "https://coralnet.ucsd.edu/image/4164924/view/",
+   "original_name": "IMG_0452.jpeg",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "0988a52a33be4d838e603ad388c932e0f15c70a3fc40a190b2833101e545fa37",
+   "mask": "masks/kenya/4164924.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "kenya",
+   "coralnet_source": 4963,
+   "source_name": "Kenya bleaching (2024)",
+   "image_id": 4164925,
+   "page_url": "https://coralnet.ucsd.edu/image/4164925/view/",
+   "original_name": "IMG_0453.jpeg",
+   "width": 3000,
+   "height": 4000,
+   "sha256": "e25c1a7842db0823f66de53622cd94f7a208dc9bf8e1cc4b6184ad1a81b8c9e9",
+   "mask": "masks/kenya/4164925.png",
+   "mask_size": [
+    1536,
+    2048
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595331,
+   "page_url": "https://coralnet.ucsd.edu/image/4595331/view/",
+   "original_name": "P8163094.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "bf7bdbfee894c405fe1e8c46c1c47b931651fadc7a7699e66413c22e871a98ea",
+   "mask": "masks/red_sea/4595331.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595335,
+   "page_url": "https://coralnet.ucsd.edu/image/4595335/view/",
+   "original_name": "P8163098.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "01c9820029bd21407bf7a5b0fd30d3be3cd9874362b9a1637a1d43707fd616ea",
+   "mask": "masks/red_sea/4595335.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595343,
+   "page_url": "https://coralnet.ucsd.edu/image/4595343/view/",
+   "original_name": "P8163106.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "9af1b262a3f38a686614c8c927bd682ef70710c02a9397b4e1510854a7de3d3b",
+   "mask": "masks/red_sea/4595343.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595355,
+   "page_url": "https://coralnet.ucsd.edu/image/4595355/view/",
+   "original_name": "P8163118.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "0e31dab23e09109da02dcd73123048905661ac27d7bfd809bfddb1e49954b314",
+   "mask": "masks/red_sea/4595355.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595360,
+   "page_url": "https://coralnet.ucsd.edu/image/4595360/view/",
+   "original_name": "P8163124.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "f2d542f3dd4bea8e8d2056d3d64dbb73b5bbbd68573ca2126371283240094f34",
+   "mask": "masks/red_sea/4595360.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595367,
+   "page_url": "https://coralnet.ucsd.edu/image/4595367/view/",
+   "original_name": "P8163131.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "fea679c7830fc585fb2bb1408d34e58c9b15985ae90944d2d7d9dd4b0654ff2b",
+   "mask": "masks/red_sea/4595367.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595386,
+   "page_url": "https://coralnet.ucsd.edu/image/4595386/view/",
+   "original_name": "P8163150.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "2c16306b8be3d60e7fcaad7f1672ab71f5aedc1e72d5307530e22927f653cd3e",
+   "mask": "masks/red_sea/4595386.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595400,
+   "page_url": "https://coralnet.ucsd.edu/image/4595400/view/",
+   "original_name": "P8163164.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "d7867acccedbd51f68eceaf5ec4a2f4e3b3854b80864f3d5c360b17b058fa6c6",
+   "mask": "masks/red_sea/4595400.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595405,
+   "page_url": "https://coralnet.ucsd.edu/image/4595405/view/",
+   "original_name": "P8163169.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "63ff094b27e2e4d3b5c6fe658d4c26f50d762d52d5ea466e53c52ce58ab3bad7",
+   "mask": "masks/red_sea/4595405.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595408,
+   "page_url": "https://coralnet.ucsd.edu/image/4595408/view/",
+   "original_name": "P8163172.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "2fac823e02231e68934f5325de1773d07e8695a50eb2e004fc8d05628607781c",
+   "mask": "masks/red_sea/4595408.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595410,
+   "page_url": "https://coralnet.ucsd.edu/image/4595410/view/",
+   "original_name": "P8163174.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "91161ece3cd332af7dd296a67b3d0c08cb97814e06d53224ede4bd0afb20a6a6",
+   "mask": "masks/red_sea/4595410.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595429,
+   "page_url": "https://coralnet.ucsd.edu/image/4595429/view/",
+   "original_name": "P8163194.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "dcc5cfccf580a1b0c2b8d39d2aaee0b3004a75dc80405eaccde147933c78cd84",
+   "mask": "masks/red_sea/4595429.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595441,
+   "page_url": "https://coralnet.ucsd.edu/image/4595441/view/",
+   "original_name": "P8163206.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "76f09d241cc9d9d0bee63eea4f3e37129ce2427feb4d60ded840c1290dc7519d",
+   "mask": "masks/red_sea/4595441.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595456,
+   "page_url": "https://coralnet.ucsd.edu/image/4595456/view/",
+   "original_name": "P8163222.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "b48dc78ae20f5df9260fb1faafe0d4585932c62b18089e771b17bf70fc453afe",
+   "mask": "masks/red_sea/4595456.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595458,
+   "page_url": "https://coralnet.ucsd.edu/image/4595458/view/",
+   "original_name": "P8163224.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "e307bb2e316927137fc88b20be0523e709d73e5a63ef46e2fe88017c84e7b9c8",
+   "mask": "masks/red_sea/4595458.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595460,
+   "page_url": "https://coralnet.ucsd.edu/image/4595460/view/",
+   "original_name": "P8163226.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "0af344461db1671f39953ac21ccaab5181da145e79600e76a45116761c988924",
+   "mask": "masks/red_sea/4595460.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595461,
+   "page_url": "https://coralnet.ucsd.edu/image/4595461/view/",
+   "original_name": "P8163227.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "8ef5bef6c4a30ec9da8c3733d65cde60faf23748923ba2680e9fefc8cf6855f1",
+   "mask": "masks/red_sea/4595461.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595463,
+   "page_url": "https://coralnet.ucsd.edu/image/4595463/view/",
+   "original_name": "P8163229.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "9fcd5491d3606bd2268fad8cd2de7df9df0de00ac6d734f98da1a486d118700e",
+   "mask": "masks/red_sea/4595463.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595465,
+   "page_url": "https://coralnet.ucsd.edu/image/4595465/view/",
+   "original_name": "P8163231.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "f1fa9be1abf216a35fa117af0e940df5415e4dc35f536ddd2ede6a922955b240",
+   "mask": "masks/red_sea/4595465.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "red_sea",
+   "coralnet_source": 5546,
+   "source_name": "Red Sea bleaching (2024)",
+   "image_id": 4595488,
+   "page_url": "https://coralnet.ucsd.edu/image/4595488/view/",
+   "original_name": "P8163268.JPG",
+   "width": 4000,
+   "height": 3000,
+   "sha256": "5abcfb0ea7212b98b502353002ed0475ed46e64a4f1d6d8b5780e4e9e4911fd1",
+   "mask": "masks/red_sea/4595488.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5202489,
+   "page_url": "https://coralnet.ucsd.edu/image/5202489/view/",
+   "original_name": "P4160566.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "6c4f0f6327296e82547ea9e8eebbaf5162e79116cd5bac7b7f6519ead6b32864",
+   "mask": "masks/chagos/5202489.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5202490,
+   "page_url": "https://coralnet.ucsd.edu/image/5202490/view/",
+   "original_name": "P4160576.jpg",
+   "width": 2976,
+   "height": 3968,
+   "sha256": "4ac3699bc5ff3469efc29a549a5ef3571fdc67c897b2ad34ad1c237146fe5449",
+   "mask": "masks/chagos/5202490.png",
+   "mask_size": [
+    1536,
+    2048
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5202492,
+   "page_url": "https://coralnet.ucsd.edu/image/5202492/view/",
+   "original_name": "P4160583.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "b8a13404559576a7cf50d9ecb352311ce46e02d8fdf182995fbb4d005d51becb",
+   "mask": "masks/chagos/5202492.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5202493,
+   "page_url": "https://coralnet.ucsd.edu/image/5202493/view/",
+   "original_name": "P4160584.jpg",
+   "width": 3784,
+   "height": 2860,
+   "sha256": "391559b2a74349a572c34b7e484417a110b1d997ccba9d5f2f345d2f3f3df71c",
+   "mask": "masks/chagos/5202493.png",
+   "mask_size": [
+    2048,
+    1548
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5217324,
+   "page_url": "https://coralnet.ucsd.edu/image/5217324/view/",
+   "original_name": "P3110272.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "d95bdd167cdb4a3db3cd814fb9122607fdfae916550b2bdca42cae711e9d4e6c",
+   "mask": "masks/chagos/5217324.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5217325,
+   "page_url": "https://coralnet.ucsd.edu/image/5217325/view/",
+   "original_name": "P3110273.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "fb8b64c7f7945dc0260587ce356e2b782fa3828ce1ea4b17c94532c2bb5f2016",
+   "mask": "masks/chagos/5217325.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5217326,
+   "page_url": "https://coralnet.ucsd.edu/image/5217326/view/",
+   "original_name": "P3110274.jpg",
+   "width": 3191,
+   "height": 2580,
+   "sha256": "7adf6396ab4bbcb524d253f6d3ef933a4a22661f1f3d720ec8ac4d83df732353",
+   "mask": "masks/chagos/5217326.png",
+   "mask_size": [
+    2048,
+    1656
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5217328,
+   "page_url": "https://coralnet.ucsd.edu/image/5217328/view/",
+   "original_name": "P3110283.jpg",
+   "width": 3628,
+   "height": 2677,
+   "sha256": "8acf2033f0090c890a51ff0bac72f730c9c02a8313cb57c48d851206b6a31f54",
+   "mask": "masks/chagos/5217328.png",
+   "mask_size": [
+    2048,
+    1511
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5217329,
+   "page_url": "https://coralnet.ucsd.edu/image/5217329/view/",
+   "original_name": "P3110300.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "87adeac8e4d7eb75711ea2fe9270596f7b6bfcddc529b3291997e13d201ab403",
+   "mask": "masks/chagos/5217329.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5217331,
+   "page_url": "https://coralnet.ucsd.edu/image/5217331/view/",
+   "original_name": "P3110309.jpg",
+   "width": 3968,
+   "height": 2648,
+   "sha256": "b62a2b20966b3c252bd7aa180d79f46aa459f2017bcec952bb23230120ee8187",
+   "mask": "masks/chagos/5217331.png",
+   "mask_size": [
+    2048,
+    1367
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220482,
+   "page_url": "https://coralnet.ucsd.edu/image/5220482/view/",
+   "original_name": "P4220837.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "ab2b439a34f548c493f11beb9bf9afaa2efe0a05a73524915064c45d10ccf0bd",
+   "mask": "masks/chagos/5220482.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220510,
+   "page_url": "https://coralnet.ucsd.edu/image/5220510/view/",
+   "original_name": "P4220905.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "70cc14714bff0feb0c65815a0b21e9a5a67480e058b70e5ee29ebe3b85619984",
+   "mask": "masks/chagos/5220510.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220516,
+   "page_url": "https://coralnet.ucsd.edu/image/5220516/view/",
+   "original_name": "P4220909.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "4b32fc287c64f52d11bb2161f740d2311e6729b869914bd6a31c0885680bcd1f",
+   "mask": "masks/chagos/5220516.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220525,
+   "page_url": "https://coralnet.ucsd.edu/image/5220525/view/",
+   "original_name": "P4220912.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "1b1284152bb6ea9b566927befe163e357deb13b551df886275a700305ec181cf",
+   "mask": "masks/chagos/5220525.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220527,
+   "page_url": "https://coralnet.ucsd.edu/image/5220527/view/",
+   "original_name": "P4220913.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "6094e8c0c4d1083d74b0a7af6fab943886b8149281afd47e229b92ebfa03ce53",
+   "mask": "masks/chagos/5220527.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220531,
+   "page_url": "https://coralnet.ucsd.edu/image/5220531/view/",
+   "original_name": "P4220915.jpg",
+   "width": 3968,
+   "height": 2818,
+   "sha256": "79d363d59bd05706a64335594225b5b8df54d9b62f9e79ca5849b9d297fad6db",
+   "mask": "masks/chagos/5220531.png",
+   "mask_size": [
+    2048,
+    1454
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220533,
+   "page_url": "https://coralnet.ucsd.edu/image/5220533/view/",
+   "original_name": "P4220916.jpg",
+   "width": 3968,
+   "height": 2976,
+   "sha256": "cacdf27cbecc8e2e48faab359564eb3b11251e0b301b9c2026a624cd4437279b",
+   "mask": "masks/chagos/5220533.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220535,
+   "page_url": "https://coralnet.ucsd.edu/image/5220535/view/",
+   "original_name": "P4220922.jpg",
+   "width": 2976,
+   "height": 3968,
+   "sha256": "9aedd95ab532b72261fb7498e3e220502ea3366e3ffb04c81d1e42a93e3da058",
+   "mask": "masks/chagos/5220535.png",
+   "mask_size": [
+    1536,
+    2048
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220536,
+   "page_url": "https://coralnet.ucsd.edu/image/5220536/view/",
+   "original_name": "P4220923.jpg",
+   "width": 2976,
+   "height": 3968,
+   "sha256": "2e27e063b839a682e826652bc77a4d7876f50ee703a6ddaa1249c00c44d83163",
+   "mask": "masks/chagos/5220536.png",
+   "mask_size": [
+    1536,
+    2048
+   ]
+  },
+  {
+   "location": "chagos",
+   "coralnet_source": 6447,
+   "source_name": "Chagos 2015",
+   "image_id": 5220538,
+   "page_url": "https://coralnet.ucsd.edu/image/5220538/view/",
+   "original_name": "P4220935.jpg",
+   "width": 3786,
+   "height": 2500,
+   "sha256": "c4244ef0316f89718e690c0943bd59ebcc870ff4be57a7bff8321cb5f98503c9",
+   "mask": "masks/chagos/5220538.png",
+   "mask_size": [
+    2048,
+    1352
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382715,
+   "page_url": "https://coralnet.ucsd.edu/image/6382715/view/",
+   "original_name": "CEM1R1.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "5c4cae7309f638c4315cc11e126b7ebbd3582d7aeaa7cd75ecee8f5e60dac4b0",
+   "mask": "masks/norfolk/6382715.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382717,
+   "page_url": "https://coralnet.ucsd.edu/image/6382717/view/",
+   "original_name": "CEM1R3.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "60ad0ac6ebe10e68d516d80048486990b16dc22b6b4f7e32bbbad3fa417a41a5",
+   "mask": "masks/norfolk/6382717.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382720,
+   "page_url": "https://coralnet.ucsd.edu/image/6382720/view/",
+   "original_name": "CEM1R6.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "adb064f393958dfe7001ed544466049bfdc175365e2d05182b31272c381ebbd9",
+   "mask": "masks/norfolk/6382720.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382721,
+   "page_url": "https://coralnet.ucsd.edu/image/6382721/view/",
+   "original_name": "CEM1R7.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "4e3aa4c961ad3f9fab9a56d0946fac99c43d4ce878d961b9835c8ab5f569cf54",
+   "mask": "masks/norfolk/6382721.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382722,
+   "page_url": "https://coralnet.ucsd.edu/image/6382722/view/",
+   "original_name": "CEM1R8.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "c0c49b22b9d523c65ef22ad00b4ae720575142334091291160d3899ee7677c7c",
+   "mask": "masks/norfolk/6382722.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382723,
+   "page_url": "https://coralnet.ucsd.edu/image/6382723/view/",
+   "original_name": "CEM1R9.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "be52a336dd7433b38a05439ef5c4eda0d78bc3010f7992b74c152c3a9e193c9a",
+   "mask": "masks/norfolk/6382723.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382724,
+   "page_url": "https://coralnet.ucsd.edu/image/6382724/view/",
+   "original_name": "CEM1R10.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "4d79bb65264ff86e327e13e838ad398e5a3ab0e7900deccae86630fc79528fd8",
+   "mask": "masks/norfolk/6382724.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382746,
+   "page_url": "https://coralnet.ucsd.edu/image/6382746/view/",
+   "original_name": "CEM4R1.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "dddb03f7e721cc84155b14b5d1f58a31a05bf757f0b8e6e34a0cdf4e8ded0351",
+   "mask": "masks/norfolk/6382746.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382747,
+   "page_url": "https://coralnet.ucsd.edu/image/6382747/view/",
+   "original_name": "CEM4R2.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "aac8e0b0912302fd52c158bf2699d0e9a11e6480da41bb7143cc737e112668a4",
+   "mask": "masks/norfolk/6382747.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382750,
+   "page_url": "https://coralnet.ucsd.edu/image/6382750/view/",
+   "original_name": "CEM4R5.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "ea5d144694870a184f964080d2b465282b57f61e33254ecd67a1a4d3accdadc9",
+   "mask": "masks/norfolk/6382750.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382752,
+   "page_url": "https://coralnet.ucsd.edu/image/6382752/view/",
+   "original_name": "CEM4R7.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "5a12c718cf302fd89a522fa419385c8cbdf52df2290e2af87c4630875716e22e",
+   "mask": "masks/norfolk/6382752.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382753,
+   "page_url": "https://coralnet.ucsd.edu/image/6382753/view/",
+   "original_name": "CEM4R8.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "aad59d6eb747a1046f693df19d5c9ddda5315a3aea769cceed2373d0e539d0f1",
+   "mask": "masks/norfolk/6382753.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382754,
+   "page_url": "https://coralnet.ucsd.edu/image/6382754/view/",
+   "original_name": "CEM4R9.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "78c794b4d7f7e3b1c6c2b31e827f19cd58c80dbb3c922d9c22151f6295325559",
+   "mask": "masks/norfolk/6382754.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382755,
+   "page_url": "https://coralnet.ucsd.edu/image/6382755/view/",
+   "original_name": "CEM4R10.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "a2c91a4633bcd82c71719120856bb72af84aa07cf0511cae7aa569aef54721ff",
+   "mask": "masks/norfolk/6382755.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382766,
+   "page_url": "https://coralnet.ucsd.edu/image/6382766/view/",
+   "original_name": "CEM6R1.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "8691c2f8b10ff73a0b6c3375e10e2f3dfebb58d095b85212d07eb085d691d086",
+   "mask": "masks/norfolk/6382766.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382767,
+   "page_url": "https://coralnet.ucsd.edu/image/6382767/view/",
+   "original_name": "CEM6R2.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "b925eafd8e96d77851e5ad22953fe25ff972b84670321aeb9c8c3765935b2602",
+   "mask": "masks/norfolk/6382767.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382768,
+   "page_url": "https://coralnet.ucsd.edu/image/6382768/view/",
+   "original_name": "CEM6R3.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "6822e1c2fbf1c3f2f51a86168d4eaf11993a6ca01d7fa7ec74a48978ce74d8c5",
+   "mask": "masks/norfolk/6382768.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382770,
+   "page_url": "https://coralnet.ucsd.edu/image/6382770/view/",
+   "original_name": "CEM6R5.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "5e39611db8c19244da4ba29b9fcb1073db4301afcf9ea86b8da1c4c8d9f1ec36",
+   "mask": "masks/norfolk/6382770.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382771,
+   "page_url": "https://coralnet.ucsd.edu/image/6382771/view/",
+   "original_name": "CEM6R6.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "24e0f4c17a277650361c68235bbaf0696de649aacb0f6cc660c0aeb519d60ef2",
+   "mask": "masks/norfolk/6382771.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "norfolk",
+   "coralnet_source": 8489,
+   "source_name": "Norfolk bleaching/health MARCH 2026",
+   "image_id": 6382775,
+   "page_url": "https://coralnet.ucsd.edu/image/6382775/view/",
+   "original_name": "CEM6R10.jpg",
+   "width": 1000,
+   "height": 1000,
+   "sha256": "e1ba65eb624f1ebe23e9e8cf7519550afbbfcc2ec2c5df113be77f23bdfb55a7",
+   "mask": "masks/norfolk/6382775.png",
+   "mask_size": [
+    1000,
+    1000
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586700,
+   "page_url": "https://coralnet.ucsd.edu/image/4586700/view/",
+   "original_name": "Pichilingue_02-11-23_Quadrant1.png-corrected.jpg",
+   "width": 1804,
+   "height": 1764,
+   "sha256": "8a334b0243e21aca479c966a54f5be801364d0759d68fab53d7f12a6817a16fe",
+   "mask": "masks/la_paz/4586700.png",
+   "mask_size": [
+    1804,
+    1764
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586702,
+   "page_url": "https://coralnet.ucsd.edu/image/4586702/view/",
+   "original_name": "Pichilingue_02-11-23_Quadrant3.png-corrected.jpg",
+   "width": 1732,
+   "height": 1852,
+   "sha256": "4e0a66dbc12fc348200ab692ad99a4d406c7e85254da2e6a98ce1fa4efa3a569",
+   "mask": "masks/la_paz/4586702.png",
+   "mask_size": [
+    1732,
+    1852
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586703,
+   "page_url": "https://coralnet.ucsd.edu/image/4586703/view/",
+   "original_name": "Pichilingue_02-11-23_Quadrant4.png-corrected.jpg",
+   "width": 1564,
+   "height": 1544,
+   "sha256": "14d164ed2ac548eef523e38cbecd8e4fcd7df9fde1aac09bbb06cda199bdcf68",
+   "mask": "masks/la_paz/4586703.png",
+   "mask_size": [
+    1564,
+    1544
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586708,
+   "page_url": "https://coralnet.ucsd.edu/image/4586708/view/",
+   "original_name": "Pichilingue_02-11-23_Quadrant9.png-corrected.jpg",
+   "width": 1312,
+   "height": 1320,
+   "sha256": "e34ea4971b3e77f89fccf33da6b62da3be7bd6bfd03339e65b6c660447ffe11f",
+   "mask": "masks/la_paz/4586708.png",
+   "mask_size": [
+    1312,
+    1320
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586709,
+   "page_url": "https://coralnet.ucsd.edu/image/4586709/view/",
+   "original_name": "Pichilingue_02-11-23_Quadrant10.png-corrected.jpg",
+   "width": 1680,
+   "height": 1772,
+   "sha256": "1cd176a6b5422d86debf8c991478270fd199e1471f0ac1d3e466bd97b3e56fc4",
+   "mask": "masks/la_paz/4586709.png",
+   "mask_size": [
+    1680,
+    1772
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586711,
+   "page_url": "https://coralnet.ucsd.edu/image/4586711/view/",
+   "original_name": "Pichilingue_08-11-23_Quadrant12.png-corrected.jpg",
+   "width": 1624,
+   "height": 1680,
+   "sha256": "ff4119c2ad0beadf7a824bb3e316d6f859c9428172f78159d020d37fa3193d61",
+   "mask": "masks/la_paz/4586711.png",
+   "mask_size": [
+    1624,
+    1680
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586712,
+   "page_url": "https://coralnet.ucsd.edu/image/4586712/view/",
+   "original_name": "Pichilingue_08-11-23_Quadrant13.png",
+   "width": 1664,
+   "height": 1616,
+   "sha256": "01b1f5f237d2669b6abb5a07cc82c51ea99eea93082ef2f6ccaf44626f8565aa",
+   "mask": "masks/la_paz/4586712.png",
+   "mask_size": [
+    1664,
+    1616
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586715,
+   "page_url": "https://coralnet.ucsd.edu/image/4586715/view/",
+   "original_name": "Pichilingue_08-11-23_Quadrant16.png",
+   "width": 1800,
+   "height": 1748,
+   "sha256": "115de4f7506ede2fa15fbaac8d05b93f0d79bd073210667e3ecde5b0cdfd1cea",
+   "mask": "masks/la_paz/4586715.png",
+   "mask_size": [
+    1800,
+    1748
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586718,
+   "page_url": "https://coralnet.ucsd.edu/image/4586718/view/",
+   "original_name": "Pichilingue_08-11-23_Quadrant19.png-corrected.jpg",
+   "width": 1556,
+   "height": 1776,
+   "sha256": "c43783e98962a94c87c78bfe2427f16c2beaab80a8abcfc00f167774841b3e39",
+   "mask": "masks/la_paz/4586718.png",
+   "mask_size": [
+    1556,
+    1776
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 5542,
+   "source_name": "CoralCoverLaPaz_2023_CRF",
+   "image_id": 4586719,
+   "page_url": "https://coralnet.ucsd.edu/image/4586719/view/",
+   "original_name": "Pichilingue_08-11-23_Quadrant20.png-corrected.jpg",
+   "width": 1472,
+   "height": 1484,
+   "sha256": "1ab983618ca20b4bec25e192b3c5e5f6dd0dec28247e24937f8cf9307858a122",
+   "mask": "masks/la_paz/4586719.png",
+   "mask_size": [
+    1472,
+    1484
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944789,
+   "page_url": "https://coralnet.ucsd.edu/image/4944789/view/",
+   "original_name": "Pichilingue_23_Transect1-3.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "827c4a4c354e1e77a78a409947316513724dddfca9bea0e14f828f1296cd32c4",
+   "mask": "masks/la_paz/4944789.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944791,
+   "page_url": "https://coralnet.ucsd.edu/image/4944791/view/",
+   "original_name": "Pichilingue_23_Transect1-5.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "78d88a5c792afd2ccbca2b8e90ee19d63fbc5657bd2e12e73da7b1c20eabf03e",
+   "mask": "masks/la_paz/4944791.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944793,
+   "page_url": "https://coralnet.ucsd.edu/image/4944793/view/",
+   "original_name": "Pichilingue_23_Transect1-7.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "8c997e334ace18be66364040f11f44fd733b5301ee26b2d8789f5e6d690fe98c",
+   "mask": "masks/la_paz/4944793.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944822,
+   "page_url": "https://coralnet.ucsd.edu/image/4944822/view/",
+   "original_name": "Pichilingue_23_Transect4-3.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "aaf29e5a187e471150822d42fb8085117f6245b2c816b5e5fa1ef9c453c1afc1",
+   "mask": "masks/la_paz/4944822.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944828,
+   "page_url": "https://coralnet.ucsd.edu/image/4944828/view/",
+   "original_name": "Pichilingue_23_Transect4-9.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "48ee9590fcb1e403b7f9d8eef9182d865565db073b61eabc695cc6a92e7a9608",
+   "mask": "masks/la_paz/4944828.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944847,
+   "page_url": "https://coralnet.ucsd.edu/image/4944847/view/",
+   "original_name": "Pichilingue_23_Transect6-6.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "31a5eecd20aa12a743c5a87a5baf12d8c537b3cdcdd5619ad1b2d22b9acd8c63",
+   "mask": "masks/la_paz/4944847.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944849,
+   "page_url": "https://coralnet.ucsd.edu/image/4944849/view/",
+   "original_name": "Pichilingue_23_Transect6-8.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "ef2eb5940c029b63f9e443fec933ad8c63d77e393062ddc791bc1ca0d83774bf",
+   "mask": "masks/la_paz/4944849.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944850,
+   "page_url": "https://coralnet.ucsd.edu/image/4944850/view/",
+   "original_name": "Pichilingue_23_Transect6-9.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "50c1bcc5378b317358337ec2d4f5aa4ae51325133782113fc818530abb1ffe8c",
+   "mask": "masks/la_paz/4944850.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944855,
+   "page_url": "https://coralnet.ucsd.edu/image/4944855/view/",
+   "original_name": "Pichilingue_23_Transect7-3.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "f5bcf8b8c5011735e7266c4e70f28e242b432a86d068c7c8425aea008914bdde",
+   "mask": "masks/la_paz/4944855.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  },
+  {
+   "location": "la_paz",
+   "coralnet_source": 6054,
+   "source_name": "Transect_November_2023",
+   "image_id": 4944864,
+   "page_url": "https://coralnet.ucsd.edu/image/4944864/view/",
+   "original_name": "Pichilingue_23_Transect8-1.JPG",
+   "width": 3648,
+   "height": 2736,
+   "sha256": "54fca353afc7186f5793fb91f649808ba2fc7f3f8ca3fb923dc5ab1d076f345b",
+   "mask": "masks/la_paz/4944864.png",
+   "mask_size": [
+    2048,
+    1536
+   ]
+  }
+ ]
+}

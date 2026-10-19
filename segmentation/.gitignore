@@ -1,0 +1,8 @@
+benchmark/photos/
+data/coralscapes_v2/
+data/labels/
+cache_v2/
+runs/
+*.benchmark.json
+__pycache__/
+*.pyc

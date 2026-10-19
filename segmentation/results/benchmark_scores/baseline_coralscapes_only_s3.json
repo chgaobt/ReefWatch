@@ -1,0 +1,119 @@
+{
+ "checkpoint": "armA_cs_r34dappm_c512_s3.pt",
+ "num_classes": 4,
+ "n_photos": 100,
+ "bleaching": {
+  "kenya": {
+   "bleached_iou": 0.1082,
+   "not_bleached_iou": 0.7877,
+   "binary_miou": 0.4479,
+   "precision": 0.902,
+   "recall": 0.1094,
+   "f1": 0.1952,
+   "gt_bleached_share": 0.2293
+  },
+  "red_sea": {
+   "bleached_iou": 0.159,
+   "not_bleached_iou": 0.854,
+   "binary_miou": 0.5065,
+   "precision": 0.7682,
+   "recall": 0.167,
+   "f1": 0.2744,
+   "gt_bleached_share": 0.1608
+  },
+  "chagos": {
+   "bleached_iou": 0.102,
+   "not_bleached_iou": 0.9038,
+   "binary_miou": 0.5029,
+   "precision": 0.7585,
+   "recall": 0.1054,
+   "f1": 0.1851,
+   "gt_bleached_share": 0.1026
+  },
+  "norfolk": {
+   "bleached_iou": 0.1525,
+   "not_bleached_iou": 0.8062,
+   "binary_miou": 0.4794,
+   "precision": 0.7832,
+   "recall": 0.1593,
+   "f1": 0.2647,
+   "gt_bleached_share": 0.2116
+  },
+  "la_paz": {
+   "bleached_iou": 0.2962,
+   "not_bleached_iou": 0.774,
+   "binary_miou": 0.5351,
+   "precision": 0.9323,
+   "recall": 0.3027,
+   "f1": 0.4571,
+   "gt_bleached_share": 0.2869
+  },
+  "pooled": {
+   "bleached_iou": 0.1821,
+   "not_bleached_iou": 0.8234,
+   "binary_miou": 0.5027,
+   "precision": 0.8593,
+   "recall": 0.1877,
+   "f1": 0.3082,
+   "gt_bleached_share": 0.2016
+  }
+ },
+ "miou": {
+  "4c_health": {
+   "kenya": {
+    "miou": 0.1596,
+    "per_class_iou": {
+     "LIVE": 0.0997,
+     "BLEACHED": 0.1082,
+     "DEGRADED": 0.1282,
+     "OTHER": 0.3023
+    }
+   },
+   "red_sea": {
+    "miou": 0.1913,
+    "per_class_iou": {
+     "LIVE": 0.1686,
+     "BLEACHED": 0.159,
+     "DEGRADED": 0.0701,
+     "OTHER": 0.3674
+    }
+   },
+   "chagos": {
+    "miou": 0.245,
+    "per_class_iou": {
+     "LIVE": 0.323,
+     "BLEACHED": 0.102,
+     "DEGRADED": 0.2102,
+     "OTHER": 0.345
+    }
+   },
+   "norfolk": {
+    "miou": 0.2573,
+    "per_class_iou": {
+     "LIVE": 0.4085,
+     "BLEACHED": 0.1525,
+     "DEGRADED": 0.1567,
+     "OTHER": 0.3115
+    }
+   },
+   "la_paz": {
+    "miou": 0.207,
+    "per_class_iou": {
+     "LIVE": 0.1261,
+     "BLEACHED": 0.2962,
+     "DEGRADED": 0.1505,
+     "OTHER": 0.2553
+    }
+   },
+   "pooled": {
+    "miou": 0.2282,
+    "per_class_iou": {
+     "LIVE": 0.2746,
+     "BLEACHED": 0.1821,
+     "DEGRADED": 0.1407,
+     "OTHER": 0.3153
+    }
+   }
+  }
+ }
+}

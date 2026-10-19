@@ -1,0 +1,20 @@
+You are labelling coral reef health in an underwater survey photo from {loc}.
+
+Two images of the SAME photo are in the current directory:
+  {tag}_clean.jpg   -- the photo
+  {tag}_sam.jpg     -- the photo cut into regions 1..{n}; each region is outlined and numbered at its centre
+Read both with the Read tool. For each numbered region, say what mostly covers it, using one of:
+  "hard_coral" (living or bleached hard coral),
+  "dead_coral" (recognisable dead coral skeleton with turf or algae, or coral rubble),
+  "rock" (reef rock or pavement that is not recognisable coral skeleton, bare or covered in turf, algae or
+          coralline algae),
+  "sand" (sand or sediment),
+  "water" (open water or blue water column, no seabed visible),
+  "other" (soft coral, sponge, macroalgae beds, tunicates, fish, the quadrat frame, anything else). For hard coral, score its colour on the
+CoralWatch Coral Health Chart brightness scale: 1 = white (bleached), 2 = very pale, 3 = pale, 4, 5, 6 =
+increasingly dark, normally pigmented. Score relative to the darkest healthy coral in the same photo and
+allow for the blue-green water cast. White or pale branch tips on an otherwise dark colony: score the region
+by its palest substantial part.
+Answer with ONLY this JSON object, one entry for every region 1..{n}:
+{{"regions": {{"1": {{"type": "hard_coral", "score": 2}}, "2": {{"type": "rock"}}, ...}},
+ "notes": "one or two sentences"}}

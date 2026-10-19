@@ -1,0 +1,21 @@
+{
+  "name": "P3_rare_E2_all_cs",
+  "about": "Milestone 1 model config: CoralScapes + all five labelled locations (+ Raja Ampat), 2x training steps, rare-class crop sampling. Chosen by mean held-out-site validation mIoU over 3 seeds; the shipped checkpoint is seed 2 (best validation).",
+  "architecture": "fpn_resnet34_dappm (ResNet-34 + FPN-lite 64 ch + DAPPM on C5), 22.47 M params, Kria DPU-legal ops",
+  "classes": ["BLEACHED", "DEAD", "ALIVE", "ROCK", "OCEAN", "SAND", "OTHER"],
+  "init": "imagenet",
+  "coralscapes": "yes, 4-class labels used as partial 7-class labels (LIVE->ALIVE, BLEACHED->BLEACHED, DEGRADED->{DEAD,ROCK}, OTHER->{ROCK,SAND,OCEAN,OTHER})",
+  "extra_train": ["kenya", "red_sea", "chagos", "la_paz", "norfolk", "raja"],
+  "validation": ["kenya_heldout", "red_sea_heldout", "chagos_heldout", "la_paz_heldout", "norfolk_heldout"],
+  "seeds": [0, 1, 2],
+  "total_steps": 17880,
+  "eval_every": 447,
+  "crop": 512,
+  "batch_size": 16,
+  "optimizer": "AdamW, OneCycle, peak lr 0.001, weight decay 1e-4, fp16 autocast",
+  "rare_crop_frac": 0.5,
+  "rare_classes": "DEAD, SAND, OCEAN, ALIVE (crop centred on one of these with probability 0.5)",
+  "selection": "best validation mIoU epoch per run; best seed by validation",
+  "inference": "raw-pixel photo, long side 1024, centre-pad to a multiple of 256 with the ImageNet mean pixel, one whole-frame pass, crop the pad",
+  "hardware_used": "RTX 4090 (RunPod), ~31 min per seed, 50.5 s/epoch at 95 % GPU utilisation in the profile check"
+}

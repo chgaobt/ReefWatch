@@ -1,0 +1,260 @@
+{
+ "checkpoint": "MILESTONE_R34_DAPPM_7c.pt",
+ "n_photos": 100,
+ "bleaching": {
+  "kenya": {
+   "bleached_iou": 0.7588,
+   "not_bleached_iou": 0.9214,
+   "binary_miou": 0.8401,
+   "precision": 0.8611,
+   "recall": 0.8646,
+   "f1": 0.8628,
+   "gt_bleached_share": 0.2293
+  },
+  "red_sea": {
+   "bleached_iou": 0.4856,
+   "not_bleached_iou": 0.884,
+   "binary_miou": 0.6848,
+   "precision": 0.6996,
+   "recall": 0.6136,
+   "f1": 0.6538,
+   "gt_bleached_share": 0.1608
+  },
+  "chagos": {
+   "bleached_iou": 0.3358,
+   "not_bleached_iou": 0.9007,
+   "binary_miou": 0.6182,
+   "precision": 0.5457,
+   "recall": 0.466,
+   "f1": 0.5027,
+   "gt_bleached_share": 0.1026
+  },
+  "norfolk": {
+   "bleached_iou": 0.4903,
+   "not_bleached_iou": 0.8137,
+   "binary_miou": 0.652,
+   "precision": 0.6071,
+   "recall": 0.7181,
+   "f1": 0.658,
+   "gt_bleached_share": 0.2116
+  },
+  "la_paz": {
+   "bleached_iou": 0.575,
+   "not_bleached_iou": 0.8453,
+   "binary_miou": 0.7101,
+   "precision": 0.9248,
+   "recall": 0.6032,
+   "f1": 0.7301,
+   "gt_bleached_share": 0.2869
+  },
+  "pooled": {
+   "bleached_iou": 0.5466,
+   "not_bleached_iou": 0.8691,
+   "binary_miou": 0.7078,
+   "precision": 0.7405,
+   "recall": 0.676,
+   "f1": 0.7068,
+   "gt_bleached_share": 0.2016
+  }
+ },
+ "miou": {
+  "7c": {
+   "kenya": {
+    "miou": 0.4204,
+    "per_class_iou": {
+     "BLEACHED": 0.7588,
+     "DEAD": 0.0391,
+     "ALIVE": 0.2864,
+     "ROCK": 0.6594,
+     "OCEAN": 0.6404,
+     "SAND": 0.053,
+     "OTHER": 0.5057
+    }
+   },
+   "red_sea": {
+    "miou": 0.4906,
+    "per_class_iou": {
+     "BLEACHED": 0.4856,
+     "DEAD": 0.1419,
+     "ALIVE": 0.3064,
+     "ROCK": 0.6807,
+     "OCEAN": 0.8261,
+     "SAND": 0.74,
+     "OTHER": 0.2535
+    }
+   },
+   "chagos": {
+    "miou": 0.3875,
+    "per_class_iou": {
+     "BLEACHED": 0.3358,
+     "DEAD": 0.1113,
+     "ALIVE": 0.4646,
+     "ROCK": 0.4909,
+     "OCEAN": 0.6562,
+     "SAND": 0.3756,
+     "OTHER": 0.2781
+    }
+   },
+   "norfolk": {
+    "miou": 0.3369,
+    "per_class_iou": {
+     "BLEACHED": 0.4903,
+     "DEAD": 0.0084,
+     "ALIVE": 0.5438,
+     "ROCK": 0.4635,
+     "OCEAN": 0.2097,
+     "SAND": 0.26,
+     "OTHER": 0.3826
+    }
+   },
+   "la_paz": {
+    "miou": 0.427,
+    "per_class_iou": {
+     "BLEACHED": 0.575,
+     "DEAD": 0.0728,
+     "ALIVE": 0.6264,
+     "ROCK": 0.4461,
+     "OCEAN": 0.1128,
+     "SAND": 0.6991,
+     "OTHER": 0.4567
+    }
+   },
+   "pooled": {
+    "miou": 0.4799,
+    "per_class_iou": {
+     "BLEACHED": 0.5466,
+     "DEAD": 0.0855,
+     "ALIVE": 0.5216,
+     "ROCK": 0.5587,
+     "OCEAN": 0.7003,
+     "SAND": 0.5343,
+     "OTHER": 0.4124
+    }
+   }
+  },
+  "6c_lenient": {
+   "kenya": {
+    "miou": 0.4853,
+    "per_class_iou": {
+     "BLEACHED": 0.7588,
+     "DEAD_ROCK": 0.6675,
+     "ALIVE": 0.2864,
+     "OCEAN": 0.6404,
+     "SAND": 0.053,
+     "OTHER": 0.5057
+    }
+   },
+   "red_sea": {
+    "miou": 0.5634,
+    "per_class_iou": {
+     "BLEACHED": 0.4856,
+     "DEAD_ROCK": 0.7688,
+     "ALIVE": 0.3064,
+     "OCEAN": 0.8261,
+     "SAND": 0.74,
+     "OTHER": 0.2535
+    }
+   },
+   "chagos": {
+    "miou": 0.4497,
+    "per_class_iou": {
+     "BLEACHED": 0.3358,
+     "DEAD_ROCK": 0.5878,
+     "ALIVE": 0.4646,
+     "OCEAN": 0.6562,
+     "SAND": 0.3756,
+     "OTHER": 0.2781
+    }
+   },
+   "norfolk": {
+    "miou": 0.3965,
+    "per_class_iou": {
+     "BLEACHED": 0.4903,
+     "DEAD_ROCK": 0.4928,
+     "ALIVE": 0.5438,
+     "OCEAN": 0.2097,
+     "SAND": 0.26,
+     "OTHER": 0.3826
+    }
+   },
+   "la_paz": {
+    "miou": 0.5163,
+    "per_class_iou": {
+     "BLEACHED": 0.575,
+     "DEAD_ROCK": 0.6277,
+     "ALIVE": 0.6264,
+     "OCEAN": 0.1128,
+     "SAND": 0.6991,
+     "OTHER": 0.4567
+    }
+   },
+   "pooled": {
+    "miou": 0.5573,
+    "per_class_iou": {
+     "BLEACHED": 0.5466,
+     "DEAD_ROCK": 0.6289,
+     "ALIVE": 0.5216,
+     "OCEAN": 0.7003,
+     "SAND": 0.5343,
+     "OTHER": 0.4124
+    }
+   }
+  },
+  "4c_health": {
+   "kenya": {
+    "miou": 0.573,
+    "per_class_iou": {
+     "LIVE": 0.2864,
+     "BLEACHED": 0.7588,
+     "DEGRADED": 0.6675,
+     "OTHER": 0.5794
+    }
+   },
+   "red_sea": {
+    "miou": 0.5913,
+    "per_class_iou": {
+     "LIVE": 0.3064,
+     "BLEACHED": 0.4856,
+     "DEGRADED": 0.7688,
+     "OTHER": 0.8043
+    }
+   },
+   "chagos": {
+    "miou": 0.4974,
+    "per_class_iou": {
+     "LIVE": 0.4646,
+     "BLEACHED": 0.3358,
+     "DEGRADED": 0.5878,
+     "OTHER": 0.6015
+    }
+   },
+   "norfolk": {
+    "miou": 0.4718,
+    "per_class_iou": {
+     "LIVE": 0.5438,
+     "BLEACHED": 0.4903,
+     "DEGRADED": 0.4928,
+     "OTHER": 0.3601
+    }
+   },
+   "la_paz": {
+    "miou": 0.6191,
+    "per_class_iou": {
+     "LIVE": 0.6264,
+     "BLEACHED": 0.575,
+     "DEGRADED": 0.6277,
+     "OTHER": 0.6473
+    }
+   },
+   "pooled": {
+    "miou": 0.5711,
+    "per_class_iou": {
+     "LIVE": 0.5216,
+     "BLEACHED": 0.5466,
+     "DEGRADED": 0.6289,
+     "OTHER": 0.5872
+    }
+   }
+  }
+ }
+}

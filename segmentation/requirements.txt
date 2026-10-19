@@ -1,0 +1,12 @@
+# Trained and verified with Python 3.12, torch 2.11 (CUDA 12.8), timm 1.0.29.
+# Install the CUDA build of torch first: https://pytorch.org/get-started/locally/
+torch>=2.4
+torchvision
+timm>=1.0
+numpy
+pillow
+pyyaml
+tqdm
+# CoralScapes download / decode (data/coralscapes/)
+huggingface_hub
+pyarrow
