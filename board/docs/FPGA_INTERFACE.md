@@ -168,14 +168,42 @@ Unreal (normal mode, one request in flight, 2 s deadline)        KV260 (--reply)
 * **Exactly one response per request** even with a misbehaving client: a request whose frame was
   replaced in the slot is answered with the next finished frame's mask (counted as `reused`).
   An inference error is answered with an all-OTHER mask plus `ERROR`.
-* **Ready for a streaming client.** The writer already has a second policy, `processed`: answer
-  only frames the pipeline actually ran, each carrying its own `frame_id`. Each result also keeps
-  that frame's `world_time_s`. A future "real-time" HUD mode needs a request flag (e.g. a new
-  `STREAM_REPLIES` bit in `flags`) that selects it: Unreal sends at camera rate without waiting,
-  the board drops what it cannot process (newest-wins, as now), and replies asynchronously. Since
-  the response header has no capture-time field, that mode would add an optional TLV block (e.g.
-  id 7 `FRAME_INFO`: frame_id, world_time_s, board receive/done times). Unknown blocks are already
-  skipped by both parsers, so this needs no version bump.
+* **Streaming (`STREAM_REPLIES`, implemented 2026-11-02).** A request with the `STREAM_REPLIES`
+  flag (Unreal's "Real time" detection displays) is answered under the writer's `processed`
+  policy: only frames the pipeline actually ran get a response, each with its own `frame_id` and
+  a `FRAME_INFO` block (capture `world_time_s`, receive -> inference start / ids ready, this
+  connection's received / inferred / skipped counts). Unreal sends at camera rate without
+  waiting, the board drops what it cannot process (newest-wins, as always), and replies
+  asynchronously. `SERVER_INFO` (block 8) names the board for the HUD's source label (`KV260 DPU`
+  with `--backend vart`). Requests without the flag keep `lockstep`; with neither
+  `STREAM_REPLIES` nor `WANT_INFO` the bytes are unchanged. Unknown blocks are skipped by both
+  parsers, so there is no version bump. Wire details: `PROTOCOL.md`, "Streaming replies".
+
+**Detection display on the HUD.** Unreal's Settings page has a "Detection display" row
+(`-detectmode=synced|realtime|realtime_mc`): **synced** = one request in flight, the board sets
+the pace (~8 fps on the KV260), screen A shows the exact frame each mask came from; **real time**
+= streaming as above, screen A is the live camera with the newest mask overlaid and its age;
+**real time + motion comp.** = the old mask is reprojected from its capture pose to the live
+frame's pose. Measured on the dev PC (2026-11-02, both servers, all three displays):
+
+| server | display | sent_hz | mask_hz | lag at arrival (ms) | mean age on screen (ms) | rtt (ms) | skipped by server |
+|---|---|---:|---:|---:|---:|---:|---:|
+| PC GPU (`runtime/`) | synced | 10.0 | 10.0 | 70-100 (spikes to 400 while the GPU warmed) | 105-133 | 31-58 | - |
+| PC GPU | real time | 10.0 | 10.0 | 70-80 | 102-113 | 27-56 | 0 |
+| PC GPU | real time + motion comp. | 10.0 | 10.0 | 68-86 | 101-119 | 27-58 | 0 |
+| board program, `torch --emulate-dpu` | synced | 10.0 | 10.0 | 100-130 | 133-169 | 39-58 | - |
+| board program, `torch --emulate-dpu` | real time | 10.0 | 10.0 | 100 | 133 | 42-44 | 1 of 730 |
+| board program, `torch --emulate-dpu` | real time + motion comp. | 10.0 | 10.0 | 100 | 133 | 42-51 | 0 of 777 |
+
+Steady-state `AUVPERF_DETECT` windows (5 s each) of 70 s `-autosurvey` runs at 1600x900, capture
+640x360 at 10 Hz, localhost, laptop GPU shared by Unreal and the detector
+(`out/e2e_stream/*.perf`). The PC rehearsal keeps up with 10 Hz in every mode, so the streaming
+link drops almost nothing and the three displays cost the same; the difference shows when the
+detector is slower than the camera (the KV260 at ~8 fps): synced then runs at the board's
+rate, real time keeps sending at 10 Hz and shows the newest of what the board finished. Lag is
+quantised by the 30 fps game frame (readback 2-3 frames). The PC-GPU MC run also switched the
+display live (realtime_mc -> synced at 15 s -> realtime_mc at 25 s, `-rwdetectat`): one
+reconnect each way, no OFFLINE.
 
 **Measured on the dev PC (2026-11-02).** The board program ran on the PC with
 `--backend torch --emulate-dpu --map-hz 1 --reply` (laptop GPU shared with Unreal). Unreal ran in

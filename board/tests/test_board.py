@@ -487,7 +487,9 @@ class TestOneWayEndToEnd(unittest.TestCase):
         self.send_frames(s, 40, start=41)
         self.assertTrue(wait_for(lambda: app.receiver.frames_rx == 80))
         self.assertEqual(app.receiver.reset_gen, 1)                 # rising edge only
-        self.assertTrue(wait_for(lambda: app.pipeline.frames_done > 0 and app.map_worker.folded >= 5))
+        # a fold takes ~0.6 s on the A53 and the map is newest-wins, so 80 frames in ~1 s fold only
+        # 2-3 times there: assert that the map folded at all (surveyed_cells > 0 checks content)
+        self.assertTrue(wait_for(lambda: app.pipeline.frames_done > 0 and app.map_worker.folded >= 1))
         self.assertTrue(wait_for(lambda: app.map_worker.latest()[1] is not None))   # a minimap exists
         self.assertEqual(app.receiver.slot.posted, 80)
         # one-way: the board never writes on the frame socket
@@ -673,6 +675,56 @@ class TestReplyEndToEnd(unittest.TestCase):
         s.close()
 
 
+    def test_stream_replies_answer_only_processed_frames(self):
+        """STREAM_REPLIES (Unreal's real-time display): the client sends without waiting; the
+        board answers only the frames its pipeline ran, in order, each with FRAME_INFO."""
+        app = self.app
+        s = self.connect()
+        plain = self.exchange(s, 1)                                   # no flag: today's bytes
+        self.assertNotIn(P.BLOCK_FRAME_INFO, plain["blocks"])
+        self.assertNotIn(P.BLOCK_SERVER_INFO, plain["blocks"])
+        replies, err = [], []
+        n0, n = 2, 41
+
+        def reader():
+            try:
+                while not replies or replies[-1]["frame_id"] != n:
+                    replies.append(read_response(s))
+            except Exception as exc:                                  # noqa: BLE001
+                err.append(exc)
+
+        t = threading.Thread(target=reader, daemon=True)
+        t.start()
+        payload = bytes(320 * 180 * 3)
+        for fid in range(n0, n + 1):                                  # a burst, never waiting
+            cam, rot = self.route.at(fid * 0.1)
+            s.sendall(P.pack_request_v2(fid, 320, 180, len(payload),
+                                        flags=P.FLAG_POSE_VALID | P.FLAG_STREAM_REPLIES,
+                                        cam=cam, rot=rot, fov_h_deg=78.0,
+                                        world_time_s=fid * 0.1) + payload)
+        t.join(TIMEOUT)
+        self.assertEqual(err, [])
+        ids = [r["frame_id"] for r in replies]
+        self.assertEqual(ids, sorted(set(ids)))                       # once each, in order
+        self.assertEqual(ids[-1], n)                                  # the newest always runs
+        for r in replies:
+            fi = r["frame_info"]
+            self.assertTrue(fi["streamed"])
+            self.assertEqual(fi["frame_id"], r["frame_id"])
+            self.assertAlmostEqual(fi["world_time_s"], r["frame_id"] * 0.1, places=5)
+            self.assertEqual(r["mask_rgba"], OTHER_RGBA * (320 * 180))
+        self.assertEqual(replies[0]["server_info"]["kind"], "board")  # once per connection
+        self.assertEqual(replies[0]["server_info"]["name"], "Board program (no model)")
+        self.assertTrue(all("server_info" not in r for r in replies[1:]))
+        c = app.reply_ctx.counters
+        self.assertTrue(wait_for(lambda: c.streamed + c.skipped == n - n0 + 1))
+        self.assertEqual(c.streamed, len(replies))
+        last = replies[-1]["frame_info"]
+        self.assertEqual(last["frames_rx"], n)                         # incl. the plain request
+        self.assertEqual(last["frames_done"] + last["frames_skipped"], n)
+        s.close()
+
+
 class TestReplyNoMap(TestReplyEndToEnd):
     """--no-map: a posed request gets one ERROR block, segmentation continues."""
 
@@ -748,6 +800,36 @@ class TestReplierUnit(unittest.TestCase):
         self.client.settimeout(0.3)
         with self.assertRaises(socket.timeout):
             self.client.recv(1)                                           # nothing for 1 and 2
+        r.close()
+
+    def test_stream_flag_selects_processed_per_request(self):
+        """lockstep context: flagged requests are answered only if they ran, unflagged ones
+        exactly once each; FRAME_INFO / SERVER_INFO only for requests that asked."""
+        ctx = self.ctx()
+        r = Replier(ctx, self.board, ("pair", 6))
+        st = P.FLAG_STREAM_REPLIES
+        e1 = r.expect(1, 64, 36, 2, st, 0, time.perf_counter(), 0.1)
+        e2 = r.expect(2, 64, 36, 2, st, 0, time.perf_counter(), 0.2)
+        r.superseded(e1)
+        r.done(e2, self.ids(), np.array([1, 0, 0, 0], np.float32), None, 5.0)
+        a = read_response(self.client)
+        self.assertEqual(a["frame_id"], 2)
+        self.assertTrue(a["frame_info"]["streamed"])
+        self.assertEqual((a["frame_info"]["frames_rx"], a["frame_info"]["frames_done"],
+                          a["frame_info"]["frames_skipped"]), (2, 1, 1))
+        self.assertIn("server_info", a)
+        e3 = r.expect(3, 64, 36, 2, 0, 0, time.perf_counter())       # no flag: lockstep
+        e4 = r.expect(4, 64, 36, 2, P.FLAG_WANT_INFO, 0, time.perf_counter(), 0.4)
+        r.superseded(e3)
+        r.done(e4, self.ids(), np.array([1, 0, 0, 0], np.float32), None, 5.0)
+        b, c = read_response(self.client), read_response(self.client)
+        self.assertEqual((b["frame_id"], c["frame_id"]), (4, 4))       # 3 reuses 4's mask
+        self.assertNotIn(P.BLOCK_FRAME_INFO, b["blocks"])            # 3 did not ask
+        self.assertFalse(c["frame_info"]["streamed"])
+        self.assertNotIn("server_info", c)                           # already sent once
+        self.assertTrue(wait_for(lambda: ctx.counters.sent == 3))
+        self.assertEqual((ctx.counters.streamed, ctx.counters.skipped, ctx.counters.reused),
+                         (1, 1, 1))
         r.close()
 
     def test_inference_failure_is_answered_with_error(self):

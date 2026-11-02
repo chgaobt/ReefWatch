@@ -73,7 +73,7 @@ Response (exactly one per request):
 | 16 | height | uint32 | 360 |
 | 20 | fmt | uint32 | 0 = RGB8 (always 0 from Unreal), 1 = JPEG |
 | 24 | payload_len | uint32 | `w*h*3` for fmt 0 |
-| 28 | flags | uint32 | bit 0 `POSE_VALID`, bit 1 `WANT_MINIMAP`, bit 2 `RESET_MAP`, bits 8-11 `WATER_LOOK` (informational) |
+| 28 | flags | uint32 | bit 0 `POSE_VALID`, bit 1 `WANT_MINIMAP`, bit 2 `RESET_MAP`, bit 3 `STREAM_REPLIES`, bit 4 `WANT_INFO`, bits 8-11 `WATER_LOOK` (informational) |
 | 32 | cam_x | float32 | capture camera world location, cm (`SegCapture->GetComponentLocation()`) |
 | 36 | cam_y | float32 | |
 | 40 | cam_z | float32 | |
@@ -97,6 +97,8 @@ Pose semantics (what the health map relies on):
 | `POSE_VALID` | `1 << 0` | the `cam_*` fields hold a real transform; the server may fold this frame into the map |
 | `WANT_MINIMAP` | `1 << 1` | render a minimap if the server's rate cap allows. The client sets it every `0.95 / MinimapHz` s (5 Hz) |
 | `RESET_MAP` | `1 << 2` | clear the map before folding this frame in. **Sticky** on the client: re-sent on every request until a response to a request that carried it is decoded |
+| `STREAM_REPLIES` | `1 << 3` | streaming: the client sends at camera rate and does not wait; the server answers only the frames it processed, asynchronously, each with `FRAME_INFO`. See "Streaming replies" below |
+| `WANT_INFO` | `1 << 4` | add `FRAME_INFO` (block 7) to every response and `SERVER_INFO` (block 8) to the first response of the connection. Implied by `STREAM_REPLIES`. The Unreal client sets it in every mode except send-only |
 | `WATER_LOOK` | bits 8-11, `(flags >> 8) & 0xF` | the water-look preset active when the frame was captured: 0 not reported (older clients), 1 `training`, 2 `tabuhan`, 3 `clear`, 4 `off`, 15 another preset (`docs/WATER_LOOK.md`). Informational only: servers and the board ignore it, but `--record` keeps the raw header, so recordings say which look the model saw (`tools/water/measure_recording.py`). Other bits stay 0 |
 
 With `POSE_VALID` clear the server answers blocks 1-3 only.
@@ -123,6 +125,25 @@ With `POSE_VALID` clear the server answers blocks 1-3 only.
 | 4 | `MAP_METRICS` | UTF-8 JSON, one line | optional |
 | 5 | `MINIMAP_PNG` | PNG bytes, RGBA | optional |
 | 6 | `ERROR` | UTF-8 text | optional, logged once per distinct text; never fatal |
+| 7 | `FRAME_INFO` | 32 B, below | only on request (`WANT_INFO` / `STREAM_REPLIES`); a reader accepts a longer block and ignores the tail |
+| 8 | `SERVER_INFO` | UTF-8 JSON, one line: `{"name": "PC GPU", "kind": "pc", ...}` | only on request, once per connection; `name` is the HUD's mask-source label |
+
+`FRAME_INFO` (little-endian):
+
+| offset | field | type | value |
+|---:|---|---|---|
+| 0 | frame_id | uint32 | the frame the mask came from (= the header's frame_id) |
+| 4 | info_flags | uint32 | bit 0 `STREAMED` (answered under `STREAM_REPLIES`), bit 1 `REUSED` (lockstep board: the mask is a later frame's) |
+| 8 | world_time_s | float32 | that frame's capture world time, echoed from its request |
+| 12 | queue_ms | float32 | request fully received -> inference started (server clock) |
+| 16 | done_ms | float32 | request fully received -> class ids ready |
+| 20 | frames_rx | uint32 | requests received on this connection |
+| 24 | frames_done | uint32 | frames inferred on this connection |
+| 28 | frames_skipped | uint32 | requests never inferred (replaced by a newer frame) on this connection |
+
+`SERVER_INFO` names: the PC server sends `PC GPU` / `PC CPU` (`--server-name` overrides); the board
+program `KV260 DPU` with `--backend vart`, otherwise `Board program (torch[, emulated DPU])` or
+`Board program (no model)` (`--server-name` overrides).
 
 A block id the client does not know is **skipped by its length** (both parsers), so new blocks
 can be added without a version bump. A block whose length overruns the payload is a protocol
@@ -209,6 +230,34 @@ malformed-request rule (the receiver closes the connection). Differences:
 
 See `docs/FPGA_INTERFACE.md`.
 
+## Streaming replies (`STREAM_REPLIES`, 2026-11)
+
+Unreal's "Real time" detection displays set `STREAM_REPLIES` on every request. Without the flag
+(and without `WANT_INFO`) every server sends exactly the bytes it sent before; old servers ignore
+both bits.
+
+* **Client.** Sends each newest capture at camera rate (10 Hz) without waiting. A second thread
+  reads responses as they arrive. The first request of a connection is a probe: if its response
+  carries `FRAME_INFO` with `STREAMED`, the link free-runs; otherwise the server is an old one
+  that answers every request, and the client paces one request in flight. The 2 s per-request
+  deadline does not apply; a connection that answers nothing for 5 s
+  (`StreamLivenessSeconds`) while requests are outstanding is closed and reconnected with the
+  usual backoff. A peer that closes twice before any response makes the client fall back to the
+  synced client (with its v1 fall-back) for the session.
+* **Server.** From the first flagged request on, the connection is streaming (a client does not
+  mix modes on one connection; switching the display opens a new connection). A reader drains
+  the socket into a single newest-frame slot; replaced frames are skipped and counted. The newest
+  frame is inferred and answered with its own `frame_id` and `FRAME_INFO`. Responses go out in
+  increasing `frame_id`; there is at most one response per request and none for skipped frames.
+  The PC server bounds each reply send by `--stream-send-timeout` (2 s), the board by
+  `--reply-timeout`. CSEG v1 requests on a streaming connection are malformed.
+* **RESET_MAP** is counted on its rising edge by streaming servers (a frame carrying it may be
+  skipped, so the sticky flag usually rides on several requests). The client treats the reset as
+  acknowledged by any response to a frame sent with or after it, and leaves one request without
+  the bit if a newer reset is pending, so the next press is a fresh edge.
+* **WANT_MINIMAP** of a skipped frame is inherited by the frame that replaces it.
+* **Map timing**: as above; the map folds after the reply, newest-wins.
+
 ## Board reply mode (`--reply`)
 
 With `--reply`, the board answers on the frame socket like the PC server, and Unreal runs in its
@@ -227,11 +276,13 @@ board, with these board-specific points (`board/reefwatch_board/reply.py`):
   received yet, sent once, on the first response after a request with `WANT_MINIMAP`;
 * `ERROR` once for a posed request when the board has no map, and with an all-OTHER mask if
   inference fails on a frame;
-* a response the board cannot send within `--reply-timeout` (2 s) closes the connection.
+* a response the board cannot send within `--reply-timeout` (2 s) closes the connection;
+* requests with `STREAM_REPLIES` are answered under the `processed` policy (only frames that
+  ran, see "Streaming replies"); requests without it keep the one-response-per-request rule.
 
 ## Client behaviour a server must tolerate
 
-* **Timeout**: no complete response within `OfflineTimeoutSeconds` (2 s) of sending -> the client
+* **Timeout** (synced mode; streaming uses the 5 s liveness rule above): no complete response within `OfflineTimeoutSeconds` (2 s) of sending -> the client
   closes the socket, shows OFFLINE and reconnects with backoff 0.5 s doubling to 5 s. The first
   forward at an unseen resolution must therefore be paid before listening (server
   `--warmup-res`, which must include the capture size).

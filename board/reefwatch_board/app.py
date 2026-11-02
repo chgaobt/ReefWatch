@@ -3,7 +3,8 @@
     Unreal --CSG2, one-way, TCP 5556--> Receiver -> newest-frame slot -> Pipeline (backend)
                                                                      -> MapWorker (<= --map-hz)
     --reply: the same, plus a CSG2 response per request on the same socket (reply.py), so
-    Unreal in its normal mode shows the board's masks and map
+    Unreal in its normal mode shows the board's masks and map; requests with STREAM_REPLIES
+    (Unreal's real-time detection display) get replies only for the frames the board ran
     status line on stdout every second; optional status port 5557 for viewers on the PC;
     map artifacts + status.jsonl in --out (every --save-every s, on disconnect, on exit)
 """
@@ -61,6 +62,9 @@ def make_parser():
                     help="answer each request on the frame socket with a CSG2 (or CSEG v1) response: "
                          "mask, class fractions, stats, map metrics + minimap. For Unreal WITHOUT "
                          "-sendonly")
+    rg.add_argument("--server-name", default=None,
+                    help="name sent in SERVER_INFO (the Unreal HUD's mask-source label); default "
+                         "'KV260 DPU' for --backend vart, else a name saying it is a rehearsal")
     rg.add_argument("--reply-timeout", type=float, default=2.0,
                     help="max seconds one response may take to send before the client is dropped "
                          "(2 = the Unreal client's own response deadline)")
@@ -92,6 +96,17 @@ def make_parser():
     return ap
 
 
+def server_name(args):
+    """What the Unreal HUD shows as the source of the masks (SERVER_INFO)."""
+    if args.server_name:
+        return args.server_name
+    if args.backend == "vart":
+        return "KV260 DPU"
+    if args.backend == "torch":
+        return "Board program (torch, emulated DPU)" if args.emulate_dpu else "Board program (torch)"
+    return "Board program (no model)"
+
+
 def build_runner(args, log):
     if args.no_map:
         log("[map] disabled (--no-map)")
@@ -112,6 +127,18 @@ def build_runner(args, log):
         f"cells, GT {gt or 'none'} ({(time.perf_counter() - t0) * 1e3:.0f} ms); <= {args.map_hz:g} "
         f"folds/s, minimap <= {args.minimap_hz:g}/s")
     return runner
+
+
+def make_server_info(args, backend):
+    """SERVER_INFO block body for this board program."""
+    from reefwatch_runtime import protocol as P
+    d = backend.describe()
+    extra = dict(program=f"reefwatch_board {__version__}", backend=d.get("backend"),
+                 streaming=True)
+    for k in ("emulate_dpu", "device", "xmodel", "input_hw", "input"):
+        if k in d:
+            extra[k] = d[k] if k != "xmodel" else os.path.basename(str(d[k]))
+    return P.pack_server_info(server_name(args), "board", **extra)
 
 
 class App:
@@ -157,10 +184,12 @@ class App:
             self.saver = Saver(runner, self.out_dir, a.save_every, extra=self._save_extra,
                                log=log).start()
         if a.reply:
+            info = make_server_info(a, self.backend)
             self.reply_ctx = ReplyContext(to_health, self.map_worker, send_timeout=a.reply_timeout,
-                                          log=log)
+                                          log=log, server_info=info)
             log(f"[reply] ON: one CSG2/CSEG response per request on :{a.port} (mask in the 4 "
-                f"health colours, MAP_METRICS, MINIMAP_PNG); send timeout {a.reply_timeout:g} s")
+                f"health colours, MAP_METRICS, MINIMAP_PNG); STREAM_REPLIES requests: only frames "
+                f"that ran are answered; send timeout {a.reply_timeout:g} s; name '{server_name(a)}'")
         frames = NewestSlot()
         self.pipeline = Pipeline(self.backend, frames, to_health, self.map_worker,
                                  frame_log=self.frame_log, log=log).start()
@@ -223,7 +252,8 @@ class App:
             s["reply"] = dict(sent=rc.sent, tx_fps=round((cur["tx"] - prev["tx"]) / dt, 2),
                               tx_MBps=round((cur["tx_bytes"] - prev["tx_bytes"]) / dt / 1e6, 2),
                               reused=rc.reused, failed=rc.failed, minimaps=rc.minimaps,
-                              closed_slow=rc.closed_slow)
+                              closed_slow=rc.closed_slow, streamed=rc.streamed,
+                              skipped=rc.skipped)
         png, serial = None, 0
         if mw is not None:
             mn, mavg = mw.window.take()
@@ -250,7 +280,8 @@ class App:
         dpu = (f" (pre {s['pre_ms']:.1f} dpu {s['dpu_ms']:.1f} post {s['post_ms']:.1f})"
                if s["backend"] != "none" else "")
         rp = s.get("reply")
-        tx = "" if rp is None else f" | tx {rp['tx_fps']:5.2f} fps {rp['tx_MBps']:4.1f} MB/s"
+        tx = "" if rp is None else (f" | tx {rp['tx_fps']:5.2f} fps {rp['tx_MBps']:4.1f} MB/s"
+                                    + (" streamed" if rp["streamed"] else ""))
         return (f"[board] rx {s['rx_fps']:5.2f} fps {s['rx_MBps']:4.1f} MB/s drop {s['dropped_s']:2d} | "
                 f"infer {s['infer_ms']:6.2f} ms{dpu} {s['pipe_fps']:5.2f} fps{mp}{tx} | "
                 f"frames {s['frames_rx']} | {s['client']}")

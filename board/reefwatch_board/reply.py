@@ -20,11 +20,16 @@ Design (Unreal keeps one request in flight and gives up after 2 s):
   Unreal's one-in-flight loop that is the request's own id (PROTOCOL.md: "echo of the
   request"). An inference error is answered with an all-OTHER mask plus an ERROR block, so the
   client stays in step.
-* Answer policy `processed` (internal, for a future streaming client that does not wait for
-  responses): only frames the pipeline actually ran are answered, each with its own frame_id;
-  replaced frames get no response. Writer thread, packing and map blocks are shared; only
-  `_take` differs. Each result keeps its frame's frame_id, world_time_s and receive time, so a
-  future response block can carry the capture time as well.
+* Answer policy `processed` (streaming): only frames the pipeline actually ran are answered,
+  each with its own frame_id; replaced frames get no response. It applies to every request
+  that carries the STREAM_REPLIES flag (Unreal's "Real time" detection display: it sends at
+  camera rate and never waits), whatever the context's default policy; requests without the
+  flag keep `lockstep`. Writer thread, packing and map blocks are shared; only `_take` differs.
+* FRAME_INFO (block 7) on every response to a request with STREAM_REPLIES or WANT_INFO: the
+  mask's frame_id and capture world_time_s, receive -> inference start / ids ready, and this
+  connection's received / inferred / skipped counts. SERVER_INFO (block 8: the board's name
+  and backend, for the HUD's mask-source label) on the first such response of the connection.
+  Requests with neither flag get exactly the bytes they got before.
 * CSG2 responses carry MASK_RGBA, CLASS_FRAC, STATS, then MAP_METRICS (the latest folded map,
   once the map has applied the request's RESET_MAP generation) and MINIMAP_PNG (a minimap the
   map thread rendered that this client has not had yet, once the client has asked with
@@ -66,6 +71,8 @@ class Counters:
         self.minimaps = 0       # MINIMAP_PNG blocks sent
         self.bytes_tx = 0
         self.closed_slow = 0    # connections closed: a send timed out / the client is not reading
+        self.streamed = 0       # responses sent under STREAM_REPLIES (the `processed` policy)
+        self.skipped = 0        # streamed requests never answered: replaced in the slot
 
 
 class ReplyContext:
@@ -74,7 +81,7 @@ class ReplyContext:
     POLICIES = ("lockstep", "processed")
 
     def __init__(self, to_health, map_worker=None, send_timeout=2.0, max_pending=64,
-                 policy="lockstep", log=print):
+                 policy="lockstep", log=print, server_info=None):
         if policy not in self.POLICIES:
             raise ValueError(f"reply policy must be one of {self.POLICIES}, got {policy!r}")
         self.policy = policy
@@ -88,6 +95,8 @@ class ReplyContext:
         self.max_pending = int(max_pending)
         self.log = log
         self.counters = Counters()
+        #: SERVER_INFO block body (bytes); a generic name if the app gave none
+        self.server_info = server_info or P.pack_server_info("board program", "board")
 
     def colourize(self, ids):
         """Native ids (h, w) -> RGBA bytes view (one uint32 gather per pixel, as the PC server)."""
@@ -98,12 +107,15 @@ class _Entry:
     """One request as it arrived."""
 
     __slots__ = ("frame_id", "width", "height", "version", "flags", "reset_gen", "t_rx",
-                 "world_time_s", "state", "result")
+                 "world_time_s", "state", "result", "stream", "info")
 
     def __init__(self, frame_id, width, height, version, flags, reset_gen, t_rx, world_time_s=0.0):
         self.frame_id, self.width, self.height = int(frame_id), int(width), int(height)
         self.version, self.flags, self.reset_gen = int(version), int(flags), int(reset_gen)
         self.t_rx, self.world_time_s = t_rx, float(world_time_s)
+        v2 = self.version == 2
+        self.stream = v2 and bool(self.flags & P.FLAG_STREAM_REPLIES)   # `processed` policy
+        self.info = v2 and P.wants_info(self.flags)                     # FRAME_INFO / SERVER_INFO
         self.state = "wait"          # wait | superseded | done
         self.result = None           # _Result once the pipeline has run this frame
 
@@ -112,10 +124,12 @@ class _Result:
     """What the pipeline produced for one frame. frame_id / world_time_s / t_rx are THAT
     frame's, whichever request the result ends up answering."""
 
-    __slots__ = ("frame_id", "world_time_s", "t_rx", "ids", "frac", "stats", "infer_ms", "error")
+    __slots__ = ("frame_id", "world_time_s", "t_rx", "t_done", "ids", "frac", "stats", "infer_ms",
+                 "error")
 
     def __init__(self, entry, ids, frac, stats, infer_ms, error=None):
         self.frame_id, self.world_time_s, self.t_rx = entry.frame_id, entry.world_time_s, entry.t_rx
+        self.t_done = time.perf_counter()
         self.ids, self.frac, self.stats = ids, frac, stats
         self.infer_ms, self.error = float(infer_ms), error
 
@@ -131,6 +145,10 @@ class Replier:
         self.want_minimap = False        # sticky until a minimap has been sent
         self.minimap_serial = 0          # serial of the last minimap sent to this client
         self.warned_no_map = False
+        self.info_sent = False           # SERVER_INFO: once per connection
+        self.n_rx = 0                    # requests registered on this connection
+        self.n_done = 0                  # ... whose frame the pipeline ran (or failed)
+        self.n_skipped = 0               # ... replaced in the slot before the pipeline took them
         self.fps = 0.0                   # EWMA of 1000 / total_ms, sent as stats[3]
         self._metrics_obj = None
         self._metrics_bytes = None
@@ -149,6 +167,7 @@ class Replier:
             else:
                 e = _Entry(frame_id, width, height, version, flags, reset_gen, t_rx, world_time_s)
                 self.pending.append(e)
+                self.n_rx += 1
                 if flags & P.FLAG_WANT_MINIMAP:
                     self.want_minimap = True
         if over:
@@ -162,6 +181,7 @@ class Replier:
         with self.cond:
             if entry.state == "wait":
                 entry.state = "superseded"
+                self.n_skipped += 1
                 self.cond.notify()
 
     # ------------------------------------------------------------------ called by the pipeline
@@ -169,6 +189,7 @@ class Replier:
         with self.cond:
             entry.result = _Result(entry, ids, frac, stats, infer_ms)
             entry.state = "done"
+            self.n_done += 1
             self.cond.notify()
 
     def failed(self, entry, message):
@@ -178,6 +199,7 @@ class Replier:
             entry.result = _Result(entry, ids, frac, None, 0.0,
                                    str(message).encode("utf-8", "replace")[:1024])
             entry.state = "done"
+            self.n_done += 1
             self.cond.notify()
 
     # ------------------------------------------------------------------ lifecycle
@@ -197,23 +219,31 @@ class Replier:
             pass
 
     # ------------------------------------------------------------------ writer thread
+    def _processed(self, entry):
+        """True if `entry` is answered under the `processed` policy (it carried STREAM_REPLIES,
+        or that is the context's default); False = `lockstep`."""
+        return entry.stream or self.ctx.policy == "processed"
+
     def _take(self):
         """Block until requests can be answered. -> [(entry, result, reused)] in request order,
         or None once the connection is closed."""
-        lockstep = self.ctx.policy == "lockstep"
         with self.cond:
             while not self.closed:
-                if not lockstep:                 # "processed": replaced frames get no answer
-                    while self.pending and self.pending[0].state == "superseded":
-                        self.pending.popleft()
+                # "processed": a replaced frame gets no answer
+                while (self.pending and self.pending[0].state == "superseded"
+                       and self._processed(self.pending[0])):
+                    self.pending.popleft()
+                    self.ctx.counters.skipped += 1
                 k = next((i for i, e in enumerate(self.pending) if e.state == "done"), None)
                 if k is not None:
                     res = self.pending[k].result
                     out = []
                     for i in range(k + 1):
                         e = self.pending.popleft()
-                        if lockstep or i == k:
+                        if i == k or not self._processed(e):
                             out.append((e, res, i < k))
+                        else:
+                            self.ctx.counters.skipped += 1
                     return out
                 self.cond.wait(0.5)
             return None
@@ -243,7 +273,22 @@ class Replier:
             self.ctx.counters.minimaps += 1
         return blocks, map_ms
 
-    def _pack(self, entry, result):
+    def _info_blocks(self, entry, result, reused):
+        """FRAME_INFO (+ SERVER_INFO once per connection) for a request that asked for it."""
+        if not entry.info:
+            return []
+        with self.cond:
+            n_rx, n_done, n_skip = self.n_rx, self.n_done, self.n_skipped
+        done_ms = (result.t_done - result.t_rx) * 1e3
+        blocks = [(P.BLOCK_FRAME_INFO, P.pack_frame_info(
+            result.frame_id, result.world_time_s, max(0.0, done_ms - result.infer_ms), done_ms,
+            n_rx, n_done, n_skip, streamed=entry.stream, reused=reused))]
+        if not self.info_sent:
+            self.info_sent = True
+            blocks.append((P.BLOCK_SERVER_INFO, self.ctx.server_info))
+        return blocks
+
+    def _pack(self, entry, result, reused=False):
         """-> ([header, *pieces], total_ms). `entry` = the request answered (version, flags,
         RESET_MAP generation, receive time); `result` = the frame the mask came from."""
         ids = result.ids
@@ -261,6 +306,7 @@ class Replier:
         blocks += extra
         if result.error is not None:
             blocks.append((P.BLOCK_ERROR, result.error))
+        blocks += self._info_blocks(entry, result, reused)
         total_ms = (time.perf_counter() - entry.t_rx) * 1e3
         head, parts = P.build_response_v2(result.frame_id, w, h, result.infer_ms, map_ms,
                                           total_ms, blocks)
@@ -274,7 +320,7 @@ class Replier:
                 return
             for entry, result, reused in batch:
                 try:
-                    parts, total_ms = self._pack(entry, result)
+                    parts, total_ms = self._pack(entry, result, reused)
                 except Exception as exc:                    # never take the board down
                     self.ctx.log(f"[reply] packing frame {entry.frame_id} FAILED: "
                                  f"{type(exc).__name__}: {exc}")
@@ -294,6 +340,8 @@ class Replier:
                 c.bytes_tx += sum(memoryview(p).nbytes for p in parts)
                 if reused:
                     c.reused += 1
+                if entry.stream:
+                    c.streamed += 1
                 if result.error is not None:
                     c.failed += 1
                 inst = 1000.0 / max(total_ms, 1e-3)

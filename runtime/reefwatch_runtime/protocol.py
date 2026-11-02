@@ -20,6 +20,11 @@ is the human-readable contract. Everything is little-endian.
 
 The version is chosen by the request MAGIC; v1's frame_id sits where a version field would go.
 An unknown TLV block id is skipped using its length.
+
+Streaming (2026-11): request flag STREAM_REPLIES (bit 3) asks the server to process only the
+newest frame, drop what it cannot keep up with, and answer the frames it processed asynchronously;
+WANT_INFO (bit 4) asks for FRAME_INFO (block 7, every response) and SERVER_INFO (block 8, once per
+connection). Without either bit the bytes on the wire are exactly the pre-streaming ones.
 """
 from __future__ import annotations
 
@@ -55,6 +60,12 @@ FMT_JPEG = 1
 FLAG_POSE_VALID = 1 << 0
 FLAG_WANT_MINIMAP = 1 << 1
 FLAG_RESET_MAP = 1 << 2
+#: streaming: the client sends at camera rate without waiting; the server answers only the
+#: frames it processed (newest wins), asynchronously, each with FRAME_INFO
+FLAG_STREAM_REPLIES = 1 << 3
+#: add FRAME_INFO to every response and SERVER_INFO to the first response of the connection
+#: (implied by FLAG_STREAM_REPLIES); old servers ignore both bits
+FLAG_WANT_INFO = 1 << 4
 # bits 8..11: water-look preset id (informational, ignored by the server; docs/WATER_LOOK.md)
 WATER_LOOK_SHIFT = 8
 WATER_LOOK_NAMES = {0: "unreported", 1: "training", 2: "tabuhan", 3: "clear", 4: "off", 15: "other"}
@@ -71,10 +82,28 @@ BLOCK_STATS = 3
 BLOCK_MAP_METRICS = 4
 BLOCK_MINIMAP_PNG = 5
 BLOCK_ERROR = 6
+BLOCK_FRAME_INFO = 7
+BLOCK_SERVER_INFO = 8
 
 BLOCK_NAMES = {BLOCK_MASK_RGBA: "MASK_RGBA", BLOCK_CLASS_FRAC: "CLASS_FRAC", BLOCK_STATS: "STATS",
                BLOCK_MAP_METRICS: "MAP_METRICS", BLOCK_MINIMAP_PNG: "MINIMAP_PNG",
-               BLOCK_ERROR: "ERROR"}
+               BLOCK_ERROR: "ERROR", BLOCK_FRAME_INFO: "FRAME_INFO",
+               BLOCK_SERVER_INFO: "SERVER_INFO"}
+
+#: FRAME_INFO (block 7), 32 bytes. A reader must accept a longer block and ignore the tail.
+#:   0 frame_id u32      the frame the mask came from (= the header's frame_id)
+#:   4 info_flags u32    bit 0 STREAMED (answered under STREAM_REPLIES), bit 1 REUSED (lockstep:
+#:                       the mask is a later frame's, the request's own frame was replaced)
+#:   8 world_time_s f32  that frame's capture world time, echoed from its request
+#:  12 queue_ms f32      request fully received -> inference started (server clock)
+#:  16 done_ms f32       request fully received -> class ids ready
+#:  20 frames_rx u32     requests received on this connection so far
+#:  24 frames_done u32   frames inferred on this connection so far
+#:  28 frames_skipped u32  requests never inferred (replaced by a newer frame) on this connection
+FRAME_INFO = struct.Struct("<IIfffIII")
+FRAME_INFO_SIZE = FRAME_INFO.size           # 32
+INFO_STREAMED = 1 << 0
+INFO_REUSED = 1 << 1
 
 #: CLASS_FRAC order on the wire (always the 4 health classes, whatever the model predicts)
 CLASS_NAMES = ("LIVE", "BLEACHED", "DEGRADED", "OTHER")
@@ -137,7 +166,37 @@ def unpack_request_v2(buf) -> dict:
                 reset_map=bool(flags & FLAG_RESET_MAP))
 
 
+def wants_info(flags) -> bool:
+    """FRAME_INFO / SERVER_INFO requested (WANT_INFO, or implied by STREAM_REPLIES)."""
+    return bool(int(flags) & (FLAG_WANT_INFO | FLAG_STREAM_REPLIES))
+
+
 # --------------------------------------------------------------------------- v2 response
+def pack_frame_info(frame_id, world_time_s=0.0, queue_ms=0.0, done_ms=0.0, frames_rx=0,
+                    frames_done=0, frames_skipped=0, streamed=False, reused=False) -> bytes:
+    """The 32-byte FRAME_INFO block body."""
+    flags = (INFO_STREAMED if streamed else 0) | (INFO_REUSED if reused else 0)
+    return FRAME_INFO.pack(int(frame_id), flags, float(world_time_s), float(queue_ms),
+                           float(done_ms), int(frames_rx), int(frames_done), int(frames_skipped))
+
+
+def unpack_frame_info(buf) -> dict:
+    if len(buf) < FRAME_INFO_SIZE:
+        raise ValueError(f"FRAME_INFO is {len(buf)} B, needs >= {FRAME_INFO_SIZE}")
+    (fid, flags, wt, q, d, rx, done, skipped) = FRAME_INFO.unpack_from(buf, 0)
+    return dict(frame_id=fid, info_flags=flags, streamed=bool(flags & INFO_STREAMED),
+                reused=bool(flags & INFO_REUSED), world_time_s=wt, queue_ms=q, done_ms=d,
+                frames_rx=rx, frames_done=done, frames_skipped=skipped)
+
+
+def pack_server_info(name, kind, **extra) -> bytes:
+    """SERVER_INFO (block 8): one line of UTF-8 JSON. `name` is what the HUD shows ("PC GPU",
+    "KV260 DPU", ...); `kind` is "pc" or "board"; anything else is informational."""
+    d = dict(name=str(name), kind=str(kind))
+    d.update(extra)
+    return json.dumps(d, separators=(",", ":"), default=str).encode("utf-8")
+
+
 def pack_tlv(block_id, data) -> bytes:
     b = bytes(data)
     return TLV.pack(int(block_id), len(b)) + b
@@ -200,4 +259,8 @@ def parse_response_v2(header_bytes, payload) -> dict:
         out["minimap_png"] = b[BLOCK_MINIMAP_PNG]
     if BLOCK_ERROR in b:
         out["error"] = b[BLOCK_ERROR].decode("utf-8", "replace")
+    if BLOCK_FRAME_INFO in b:
+        out["frame_info"] = unpack_frame_info(b[BLOCK_FRAME_INFO])
+    if BLOCK_SERVER_INFO in b:
+        out["server_info"] = json.loads(b[BLOCK_SERVER_INFO].decode("utf-8"))
     return out

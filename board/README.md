@@ -305,6 +305,7 @@ To copy by hand instead, keep the same layout under one folder:
 | `--host`, `--port` | `0.0.0.0`, `5556` | frame socket (one-way unless `--reply`) |
 | `--reply` | off | answer every request on the frame socket (section 9); for Unreal **without** `-sendonly` |
 | `--reply-timeout` | `2` | seconds one response may take to send before that client is dropped |
+| `--server-name` | by backend | name sent in `SERVER_INFO` (the Unreal HUD's mask-source label) |
 | `--status-port`, `--no-status` | `5557` | viewer port; off with `--no-status` |
 | `--map-hz` | `3` | map folds per second at most (the newest posed frame is folded; frames in between only miss the map). **Use 1 on the KV260** (a fold takes ~0.6 s on the A53) |
 | `--minimap-hz` | `1` | minimap renders for the status port |
@@ -449,8 +450,21 @@ a socket. Use one-way mode (no `--reply`) for `replay_stream.py` and `-sendonly`
 **Exactly one response per request.** If a client pipelines requests and a frame is replaced in the
 slot before the pipeline took it, that request is answered with the next finished frame's mask,
 whose `frame_id` the response carries (counted as `reused`). An inference error is answered with an
-all-OTHER mask plus an `ERROR` block, so the client stays in step. `reply.py` also has an internal
-`processed` policy (answer only the frames that ran) for a future streaming client.
+all-OTHER mask plus an `ERROR` block, so the client stays in step.
+
+**Streaming (Unreal's "Real time" detection display).** Requests that carry the `STREAM_REPLIES`
+flag are answered under the `processed` policy instead: Unreal sends at camera rate and never
+waits, the board answers only the frames its pipeline actually ran (replaced frames get no
+response, counted as `skipped`), each with a `FRAME_INFO` block (frame_id, capture world time,
+receive -> ids-ready time, this connection's received / inferred / skipped counts). The first such
+response also carries `SERVER_INFO`, the name the HUD shows as the mask source: `KV260 DPU` with
+`--backend vart`, `Board program (torch, emulated DPU)` in the PC rehearsal, or `--server-name`.
+Nothing to switch on the board: `--reply` serves both kinds of client, per request. The status
+line adds `streamed`; `metrics.json` `replies` gains `streamed` and `skipped`.
+
+```sh
+(PC)     tools\run_sim.bat -segserver=192.168.1.2 -detectmode=realtime      (or realtime_mc, synced)
+```
 
 Measured on the dev PC (2026-11-02, the board program with `torch --emulate-dpu` and `--map-hz 1`,
 Unreal on the same machine in normal mode, `-autosurvey`): see `docs/FPGA_INTERFACE.md`,
