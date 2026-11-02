@@ -1,0 +1,6 @@
+# board/ text files keep LF in the repo; the shell script must also be LF in a Windows checkout
+*.sh text eol=lf
+*.xmodel binary
+*.npz binary
+*.jpg binary
+*.png binary

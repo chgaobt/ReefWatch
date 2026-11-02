@@ -1,0 +1,153 @@
+{
+ "source": "real xir 3.5 via make_specs.py",
+ "xmodel": "coral_milestone_7c_512x768.xmodel",
+ "md5": "1cf85891f70f6e3c0dd3e40dac67fdad",
+ "graph": "CoralSegDPU",
+ "subgraphs": [
+  {
+   "name": "subgraph_CoralSegDPU__input_0",
+   "attrs": {
+    "workload_on_arch": 0,
+    "device": "USER",
+    "workload": 0
+   },
+   "n_ops": 1,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CoralSegDPU__input_0_fix",
+     "dims": [
+      1,
+      512,
+      768,
+      3
+     ],
+     "dtype": "xint8",
+     "attrs": {
+      "fix_point": 5,
+      "if_signed": true,
+      "round_mode": "DPU_ROUND",
+      "bit_width": 8
+     }
+    }
+   ]
+  },
+  {
+   "name": "subgraph_CoralSegDPU__CoralSegDPU_Conv2d_head__ret_349",
+   "attrs": {
+    "reg_id_to_hw_segment": {
+     "REG_0": "W0",
+     "REG_1": "D0",
+     "REG_2": "D0",
+     "REG_3": "D0"
+    },
+    "debug_mode": "null",
+    "reg_id_to_context_type": {
+     "REG_0": "CONST",
+     "REG_1": "DATA",
+     "REG_2": "DATA",
+     "REG_3": "DATA"
+    },
+    "dpu_fingerprint": 72339070457545735,
+    "device": "DPU",
+    "runner": {
+     "ref": "libvart-cpu-runner.so",
+     "run": "libvart-dpu-runner.so",
+     "sim": "libvart-sim-runner.so"
+    },
+    "dpu_name": "DPUCZDX8G_ISA1_B4096",
+    "workload": 60442962172,
+    "reg_id_to_context_type_v2": {
+     "REG_0": "CONST",
+     "REG_1": "WORKSPACE",
+     "REG_2": "INTERFACE",
+     "REG_3": "INTERFACE"
+    },
+    "if_prefetch": false,
+    "workload_on_arch": 60067466432
+   },
+   "n_ops": 222,
+   "inputs": [
+    {
+     "name": "CoralSegDPU__input_0_fix",
+     "dims": [
+      1,
+      512,
+      768,
+      3
+     ],
+     "dtype": "xint8",
+     "attrs": {
+      "fix_point": 5,
+      "if_signed": true,
+      "round_mode": "DPU_ROUND",
+      "bit_width": 8
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CoralSegDPU__CoralSegDPU_Upsample_up_out__ret_fix",
+     "dims": [
+      1,
+      512,
+      768,
+      7
+     ],
+     "dtype": "xint8",
+     "attrs": {
+      "fix_point": 3,
+      "if_signed": true,
+      "round_mode": "DPU_ROUND",
+      "bit_width": 8
+     }
+    }
+   ]
+  },
+  {
+   "name": "subgraph_CoralSegDPU__CoralSegDPU_Upsample_up_out__ret_fix_",
+   "attrs": {
+    "device": "CPU",
+    "workload_on_arch": 0,
+    "workload": 0,
+    "runner": {
+     "ref": "libvart-cpu-runner.so",
+     "run": "libvart-cpu-runner.so",
+     "sim": "libvart-cpu-runner.so"
+    }
+   },
+   "n_ops": 1,
+   "inputs": [
+    {
+     "name": "CoralSegDPU__CoralSegDPU_Upsample_up_out__ret_fix",
+     "dims": [
+      1,
+      512,
+      768,
+      7
+     ],
+     "dtype": "xint8",
+     "attrs": {
+      "fix_point": 3,
+      "if_signed": true,
+      "round_mode": "DPU_ROUND",
+      "bit_width": 8
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CoralSegDPU__CoralSegDPU_Upsample_up_out__ret_fix_",
+     "dims": [
+      1,
+      512,
+      768,
+      7
+     ],
+     "dtype": "float32",
+     "attrs": {}
+    }
+   ]
+  }
+ ]
+}

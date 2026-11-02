@@ -1,0 +1,8 @@
+{
+    "lib": "libvart-dpu-runner.so",
+    "filename": "coral_milestone_7c_512x1024.xmodel",
+    "kernel": [
+        "subgraph_CoralSegDPU__CoralSegDPU_Conv2d_head__ret_349"
+    ],
+    "target": "DPUCZDX8G_ISA1_B4096"
+}

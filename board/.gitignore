@@ -1,0 +1,4 @@
+# run outputs and caches of the board program
+out/
+__pycache__/
+*.pyc
