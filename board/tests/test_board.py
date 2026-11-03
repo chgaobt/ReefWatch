@@ -268,22 +268,25 @@ class TestVartBackendFaked(unittest.TestCase):
         from reefwatch_board.backends import VartBackend
         order = []
 
-        class FakeOverlay:
-            def __init__(self, bitfile):
+        class FakeOverlay:                                   # as in DPU-PYNQ 3.5: no method;
+            def __init__(self, bitfile):                     # check_vart_config lives in pynq_dpu.dpu
                 order.append(("overlay", bitfile))
-
-            def check_vart_config(self):
-                order.append(("vart.conf",))
 
         self._install()
         mod = types.ModuleType("pynq_dpu")
         mod.DpuOverlay = FakeOverlay
-        self._saved["pynq_dpu"] = sys.modules.get("pynq_dpu")
+        sub = types.ModuleType("pynq_dpu.dpu")
+        sub.check_vart_config = lambda: order.append(("vart.conf",))
+        mod.dpu = sub
+        for k in ("pynq_dpu", "pynq_dpu.dpu"):
+            self._saved[k] = sys.modules.get(k)
         sys.modules["pynq_dpu"] = mod
+        sys.modules["pynq_dpu.dpu"] = sub
         be = VartBackend("fake.xmodel", log=lambda m: None, pynq_overlay="dpu.bit")
         self.assertEqual(order, [("overlay", "dpu.bit"), ("vart.conf",)])
         self.assertIsInstance(be.overlay, FakeOverlay)
         sys.modules["pynq_dpu"] = None                       # not installed -> clear message
+        sys.modules["pynq_dpu.dpu"] = None
         with self.assertRaises(RuntimeError) as cm:
             VartBackend("fake.xmodel", log=lambda m: None, pynq_overlay="dpu.bit")
         self.assertIn("SETUP_UBUNTU.md", str(cm.exception))

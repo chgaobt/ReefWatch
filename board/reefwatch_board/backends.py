@@ -109,8 +109,15 @@ def load_pynq_dpu_overlay(bitfile, log=print):
             f"drop the option. See SETUP_UBUNTU.md.") from None
     t0 = time.perf_counter()
     ov = DpuOverlay(bitfile)
-    if hasattr(ov, "check_vart_config"):
-        ov.check_vart_config()
+    # check_vart_config is a module-level function in pynq_dpu.dpu (DPU-PYNQ 3.5), not a method:
+    # it points /etc/vart.conf at the xclbin DpuOverlay just copied to /usr/lib/dpu.xclbin.
+    # Without it VART opens whatever the conf names (on Kria Ubuntu: /run/media/mmcblk0p1/...).
+    try:
+        from pynq_dpu.dpu import check_vart_config
+    except ImportError:
+        check_vart_config = getattr(ov, "check_vart_config", None)
+    if check_vart_config is not None:
+        check_vart_config()
     log(f"[vart] DPU-PYNQ overlay {bitfile} loaded ({(time.perf_counter() - t0) * 1e3:.0f} ms)")
     return ov
 
