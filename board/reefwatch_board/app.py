@@ -134,7 +134,12 @@ def make_server_info(args, backend):
     from reefwatch_runtime import protocol as P
     d = backend.describe()
     extra = dict(program=f"reefwatch_board {__version__}", backend=d.get("backend"),
-                 streaming=True)
+                 streaming=True, classes=int(backend.num_classes),
+                 health_classes=P.class_table(PP.HEALTH_NAMES, PP.HEALTH_PALETTE_RGBA),
+                 mask_default=4)
+    nat = PP.native_classes(backend.num_classes)
+    if nat is not None:                  # WANT_NATIVE_CLASSES is honoured
+        extra["native_classes"] = P.class_table(*nat)
     for k in ("emulate_dpu", "device", "xmodel", "input_hw", "input"):
         if k in d:
             extra[k] = d[k] if k != "xmodel" else os.path.basename(str(d[k]))
@@ -188,7 +193,9 @@ class App:
             self.reply_ctx = ReplyContext(to_health, self.map_worker, send_timeout=a.reply_timeout,
                                           log=log, server_info=info)
             log(f"[reply] ON: one CSG2/CSEG response per request on :{a.port} (mask in the 4 "
-                f"health colours, MAP_METRICS, MINIMAP_PNG); STREAM_REPLIES requests: only frames "
+                f"health colours, or the 7 native ones for WANT_NATIVE_CLASSES "
+                f"({'on' if self.reply_ctx.native_supported else 'not with this model'}), "
+                f"MAP_METRICS, MINIMAP_PNG); STREAM_REPLIES requests: only frames "
                 f"that ran are answered; send timeout {a.reply_timeout:g} s; name '{server_name(a)}'")
         frames = NewestSlot()
         self.pipeline = Pipeline(self.backend, frames, to_health, self.map_worker,

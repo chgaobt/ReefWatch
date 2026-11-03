@@ -39,6 +39,17 @@ SEVEN_TO_HEALTH = {"health": (1, 2, 0, 2, 3, 3, 3),    # DEAD + ROCK -> DEGRADED
 #: (pinned by a test). `--reply` colours the mask with it, as the PC server does by default.
 HEALTH_PALETTE_RGBA = ((0, 200, 80, 255), (255, 255, 255, 255), (200, 60, 40, 255),
                        (60, 60, 200, 255))
+#: label-editor colours of the 7 native classes, SEVEN_NAMES order; copied from
+#: reefwatch_runtime.model.SEVEN_HEX (pinned by a test). `--reply` colours the mask with them
+#: for requests with WANT_NATIVE_CLASSES (docs/PROTOCOL.md "Classes and palette").
+SEVEN_HEX = ("#f4ec75", "#ea7979", "#67d88d", "#6b4f3a", "#68b9ef", "#f38400", "#e591d6")
+SEVEN_PALETTE_RGBA = tuple(tuple(int(h[i:i + 2], 16) for i in (1, 3, 5)) + (255,) for h in SEVEN_HEX)
+
+
+def native_classes(num_classes):
+    """(names, RGBA rows) of the model's own classes when they differ from health (the 7-class
+    head), else None: WANT_NATIVE_CLASSES is then ignored and the mask stays health."""
+    return (SEVEN_NAMES, SEVEN_PALETTE_RGBA) if num_classes == 7 else None
 
 
 def to_health_table(num_classes, scheme="health"):

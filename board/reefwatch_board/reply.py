@@ -30,6 +30,10 @@ Design (Unreal keeps one request in flight and gives up after 2 s):
   connection's received / inferred / skipped counts. SERVER_INFO (block 8: the board's name
   and backend, for the HUD's mask-source label) on the first such response of the connection.
   Requests with neither flag get exactly the bytes they got before.
+* WANT_NATIVE_CLASSES (per request, either policy; 7-class models): the mask is coloured with a
+  second precomputed palette (the 7 native colours, same one-gather cost) and CLASS_FRAC_NATIVE
+  (block 9) carries the 7 fractions the pipeline already counted. CLASS_FRAC and the map stay
+  health. A request without the bit gets the health colours, as before.
 * CSG2 responses carry MASK_RGBA, CLASS_FRAC, STATS, then MAP_METRICS (the latest folded map,
   once the map has applied the request's RESET_MAP generation) and MINIMAP_PNG (a minimap the
   map thread rendered that this client has not had yet, once the client has asked with
@@ -89,6 +93,10 @@ class ReplyContext:
         pal = np.asarray(PP.HEALTH_PALETTE_RGBA, np.uint8)[lut]            # native id -> RGBA
         self.pal32 = np.ascontiguousarray(pal).view(np.uint32).reshape(-1)
         self.num_classes = len(lut)
+        # WANT_NATIVE_CLASSES: a second precomputed palette, indexed by native id (7-class only)
+        nat = PP.native_classes(len(lut))
+        self.pal32_native = (None if nat is None else np.ascontiguousarray(
+            np.asarray(nat[1], np.uint8)).view(np.uint32).reshape(-1))
         self.other_id = int(np.flatnonzero(lut == 3)[-1]) if (lut == 3).any() else len(lut) - 1
         self.map_worker = map_worker
         self.send_timeout = float(send_timeout)
@@ -98,9 +106,16 @@ class ReplyContext:
         #: SERVER_INFO block body (bytes); a generic name if the app gave none
         self.server_info = server_info or P.pack_server_info("board program", "board")
 
-    def colourize(self, ids):
-        """Native ids (h, w) -> RGBA bytes view (one uint32 gather per pixel, as the PC server)."""
-        return memoryview(self.pal32[ids].view(np.uint8).reshape(-1))
+    @property
+    def native_supported(self):
+        """WANT_NATIVE_CLASSES is honoured (the model has 7 native classes)."""
+        return self.pal32_native is not None
+
+    def colourize(self, ids, native=False):
+        """Native ids (h, w) -> RGBA bytes view (one uint32 gather per pixel, as the PC server).
+        `native`: the 7 native colours instead of the health ones (same cost)."""
+        pal = self.pal32_native if (native and self.pal32_native is not None) else self.pal32
+        return memoryview(pal[ids].view(np.uint8).reshape(-1))
 
 
 class _Entry:
@@ -125,13 +140,14 @@ class _Result:
     frame's, whichever request the result ends up answering."""
 
     __slots__ = ("frame_id", "world_time_s", "t_rx", "t_done", "ids", "frac", "stats", "infer_ms",
-                 "error")
+                 "error", "native_frac")
 
-    def __init__(self, entry, ids, frac, stats, infer_ms, error=None):
+    def __init__(self, entry, ids, frac, stats, infer_ms, error=None, native_frac=None):
         self.frame_id, self.world_time_s, self.t_rx = entry.frame_id, entry.world_time_s, entry.t_rx
         self.t_done = time.perf_counter()
         self.ids, self.frac, self.stats = ids, frac, stats
         self.infer_ms, self.error = float(infer_ms), error
+        self.native_frac = native_frac   # per native class, for WANT_NATIVE_CLASSES (or None)
 
 
 class Replier:
@@ -185,9 +201,9 @@ class Replier:
                 self.cond.notify()
 
     # ------------------------------------------------------------------ called by the pipeline
-    def done(self, entry, ids, frac, stats, infer_ms):
+    def done(self, entry, ids, frac, stats, infer_ms, native_frac=None):
         with self.cond:
-            entry.result = _Result(entry, ids, frac, stats, infer_ms)
+            entry.result = _Result(entry, ids, frac, stats, infer_ms, native_frac=native_frac)
             entry.state = "done"
             self.n_done += 1
             self.cond.notify()
@@ -195,9 +211,12 @@ class Replier:
     def failed(self, entry, message):
         ids = np.full((entry.height, entry.width), self.ctx.other_id, np.uint8)
         frac = np.array([0, 0, 0, 1], np.float32)
+        native_frac = np.zeros(self.ctx.num_classes, np.float32)
+        native_frac[self.ctx.other_id] = 1.0
         with self.cond:
             entry.result = _Result(entry, ids, frac, None, 0.0,
-                                   str(message).encode("utf-8", "replace")[:1024])
+                                   str(message).encode("utf-8", "replace")[:1024],
+                                   native_frac=native_frac)
             entry.state = "done"
             self.n_done += 1
             self.cond.notify()
@@ -293,7 +312,10 @@ class Replier:
         RESET_MAP generation, receive time); `result` = the frame the mask came from."""
         ids = result.ids
         h, w = ids.shape
-        mask = self.ctx.colourize(ids)
+        # WANT_NATIVE_CLASSES (v2 only, decided by the request answered): 7 native colours + block 9
+        native = (entry.version == 2 and P.wants_native(entry.flags) and self.ctx.native_supported
+                  and result.native_frac is not None)
+        mask = self.ctx.colourize(ids, native)
         frac_b = np.asarray(result.frac, "<f4").tobytes()
         s3 = result.stats if result.stats is not None else (0.0, 0.0, 0.0)
         stats_b = np.array([s3[0], s3[1], s3[2], self.fps], "<f4").tobytes()
@@ -302,6 +324,8 @@ class Replier:
             head = P.pack_response_header_v1(result.frame_id, w, h, result.infer_ms, total_ms)
             return [head, mask, frac_b + stats_b], total_ms
         blocks = [(P.BLOCK_MASK_RGBA, mask), (P.BLOCK_CLASS_FRAC, frac_b), (P.BLOCK_STATS, stats_b)]
+        if native:
+            blocks.append((P.BLOCK_CLASS_FRAC_NATIVE, P.pack_class_frac_native(result.native_frac)))
         extra, map_ms = self._map_blocks(entry)
         blocks += extra
         if result.error is not None:

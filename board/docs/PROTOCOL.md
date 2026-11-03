@@ -73,7 +73,7 @@ Response (exactly one per request):
 | 16 | height | uint32 | 360 |
 | 20 | fmt | uint32 | 0 = RGB8 (always 0 from Unreal), 1 = JPEG |
 | 24 | payload_len | uint32 | `w*h*3` for fmt 0 |
-| 28 | flags | uint32 | bit 0 `POSE_VALID`, bit 1 `WANT_MINIMAP`, bit 2 `RESET_MAP`, bit 3 `STREAM_REPLIES`, bit 4 `WANT_INFO`, bits 8-11 `WATER_LOOK` (informational) |
+| 28 | flags | uint32 | bit 0 `POSE_VALID`, bit 1 `WANT_MINIMAP`, bit 2 `RESET_MAP`, bit 3 `STREAM_REPLIES`, bit 4 `WANT_INFO`, bit 5 `WANT_NATIVE_CLASSES`, bits 8-11 `WATER_LOOK` (informational) |
 | 32 | cam_x | float32 | capture camera world location, cm (`SegCapture->GetComponentLocation()`) |
 | 36 | cam_y | float32 | |
 | 40 | cam_z | float32 | |
@@ -99,6 +99,7 @@ Pose semantics (what the health map relies on):
 | `RESET_MAP` | `1 << 2` | clear the map before folding this frame in. **Sticky** on the client: re-sent on every request until a response to a request that carried it is decoded |
 | `STREAM_REPLIES` | `1 << 3` | streaming: the client sends at camera rate and does not wait; the server answers only the frames it processed, asynchronously, each with `FRAME_INFO`. See "Streaming replies" below |
 | `WANT_INFO` | `1 << 4` | add `FRAME_INFO` (block 7) to every response and `SERVER_INFO` (block 8) to the first response of the connection. Implied by `STREAM_REPLIES`. The Unreal client sets it in every mode except send-only |
+| `WANT_NATIVE_CLASSES` | `1 << 5` | per request: colour this response's `MASK_RGBA` in the model's **native** classes and add `CLASS_FRAC_NATIVE` (block 9). Honoured only by a server whose `SERVER_INFO` lists `native_classes` (a 7-class model); others ignore it and answer in the 4 health colours with no block 9. `CLASS_FRAC`, `STATS` and the map are unchanged (always health). The Unreal client sets it while "Mask classes: 7" is selected, never in send-only. See "Classes and palette" |
 | `WATER_LOOK` | bits 8-11, `(flags >> 8) & 0xF` | the water-look preset active when the frame was captured: 0 not reported (older clients), 1 `training`, 2 `tabuhan`, 3 `clear`, 4 `off`, 15 another preset (`docs/WATER_LOOK.md`). Informational only: servers and the board ignore it, but `--record` keeps the raw header, so recordings say which look the model saw (`tools/water/measure_recording.py`). Other bits stay 0 |
 
 With `POSE_VALID` clear the server answers blocks 1-3 only.
@@ -126,7 +127,8 @@ With `POSE_VALID` clear the server answers blocks 1-3 only.
 | 5 | `MINIMAP_PNG` | PNG bytes, RGBA | optional |
 | 6 | `ERROR` | UTF-8 text | optional, logged once per distinct text; never fatal |
 | 7 | `FRAME_INFO` | 32 B, below | only on request (`WANT_INFO` / `STREAM_REPLIES`); a reader accepts a longer block and ignores the tail |
-| 8 | `SERVER_INFO` | UTF-8 JSON, one line: `{"name": "PC GPU", "kind": "pc", ...}` | only on request, once per connection; `name` is the HUD's mask-source label |
+| 8 | `SERVER_INFO` | UTF-8 JSON, one line: `{"name": "PC GPU", "kind": "pc", ...}` | only on request, once per connection; `name` is the HUD's mask-source label; `health_classes` / `native_classes` drive the HUD legend (below) |
+| 9 | `CLASS_FRAC_NATIVE` | uint32 `count`, then float32[`count`]: pixel share of each native class, in `native_classes` order (7 for the milestone model) | only when the request had `WANT_NATIVE_CLASSES` **and** the server honoured it; its presence means `MASK_RGBA` is in the native colours. Length must be `4 + 4*count`, `1 <= count <= 32`; a malformed block is ignored (the mask is then read as health) |
 
 `FRAME_INFO` (little-endian):
 
@@ -144,6 +146,22 @@ With `POSE_VALID` clear the server answers blocks 1-3 only.
 `SERVER_INFO` names: the PC server sends `PC GPU` / `PC CPU` (`--server-name` overrides); the board
 program `KV260 DPU` with `--backend vart`, otherwise `Board program (torch[, emulated DPU])` or
 `Board program (no model)` (`--server-name` overrides).
+
+`SERVER_INFO` class tables (2026-11; both servers), each `{"names": [...], "colors": ["#rrggbb", ...]}`
+in class-id order:
+
+```json
+{"name":"KV260 DPU","kind":"board", ...,"classes":7,"mask_default":4,
+ "health_classes":{"names":["LIVE","BLEACHED","DEGRADED","OTHER"],
+                   "colors":["#00c850","#ffffff","#c83c28","#3c3cc8"]},
+ "native_classes":{"names":["BLEACHED","DEAD","ALIVE","ROCK","OCEAN","SAND","OTHER"],
+                   "colors":["#f4ec75","#ea7979","#67d88d","#6b4f3a","#68b9ef","#f38400","#e591d6"]}}
+```
+
+`native_classes` is present only when the server honours `WANT_NATIVE_CLASSES`. `mask_default` is
+the class set of a response to a request **without** the flag (4; 7 for a PC server started with
+`--mask-classes native`). The HUD builds its mask legend from these tables and falls back to the
+built-in tables above / in "Classes and palette" when a server sends none.
 
 A block id the client does not know is **skipped by its length** (both parsers), so new blocks
 can be added without a version bump. A block whose length overruns the payload is a protocol
@@ -191,7 +209,8 @@ the same image is the HUD inset (over a dark plate) and the world-overlay textur
 
 ## Classes and palette
 
-`CLASS_FRAC`, the map and the HUD legend always use the 4 health classes, in this order:
+`CLASS_FRAC` and the map always use the 4 health classes (and so does the mask, unless the
+request asks for native classes), in this order:
 
 | id | class | mask colour (R,G,B) |
 |---:|---|---|
@@ -203,11 +222,41 @@ the same image is the HUD inset (over a dark plate) and the world-overlay textur
 The milestone model predicts 7 classes (`BLEACHED, DEAD, ALIVE, ROCK, OCEAN, SAND, OTHER`). The
 server collapses them to health ids (`--seven-to-health health`, default: ALIVE -> LIVE,
 BLEACHED -> BLEACHED, DEAD + ROCK -> DEGRADED, OCEAN + SAND + OTHER -> OTHER) for `CLASS_FRAC`,
-`mean_p_bleached`'s class and the map. The mask is coloured in the 4 colours above by default
-(`--mask-classes 4`, matches the HUD legend). `--mask-classes native` colours it in the 7
-label-editor colours instead (`#f4ec75 #ea7979 #67d88d #6b4f3a #68b9ef #f38400 #e591d6`), which the
-HUD legend does not describe. The mask is display-only: the client swizzles it to BGRA for a
+`mean_p_bleached`'s class and the map. Native classes and their label-editor colours:
+
+| id | class | mask colour |
+|---:|---|---|
+| 0 | BLEACHED | `#f4ec75` |
+| 1 | DEAD | `#ea7979` |
+| 2 | ALIVE | `#67d88d` |
+| 3 | ROCK | `#6b4f3a` |
+| 4 | OCEAN | `#68b9ef` |
+| 5 | SAND | `#f38400` |
+| 6 | OTHER | `#e591d6` |
+
+Which colours a response's mask uses:
+
+| request | server | mask | blocks |
+|---|---|---|---|
+| no `WANT_NATIVE_CLASSES` | any | 4 health colours (PC server: 7 native colours if started with `--mask-classes native`) | as before, byte for byte |
+| `WANT_NATIVE_CLASSES` | PC server or board `--reply`, 7-class model | 7 native colours | + `CLASS_FRAC_NATIVE` (7 floats) |
+| `WANT_NATIVE_CLASSES` | 4-class model, or an older server | 4 health colours | no block 9 |
+
+The flag is read per request in every mode (synced, `STREAM_REPLIES`, lockstep board), so a
+client can switch between requests on one connection. Cost on the board: a second precomputed
+7-entry uint32 palette (the same one-gather colouring) and 7 floats from the histogram the
+pipeline already computes. The mask is display-only: the client swizzles it to BGRA for a
 `PF_B8G8R8A8` sRGB texture, and the map is fed class ids on the server side, never decoded colours.
+
+**Unreal ("Mask classes" setting).** Settings page row "Mask classes: 4 health | 7 classes"
+(saved as `mask_classes` in `Saved/ReefWatchSettings.json`), `-maskclasses=4|7` for one run,
+console `RWMaskClasses 4|7` (or `RWMenu maskclasses=7`, saved). The choice is stamped on each
+capture, so it takes effect on the next request without reconnecting. The legend, class bar and
+percentages under screen B / the PIP follow the response: native names / colours from
+`SERVER_INFO` and the fractions from `CLASS_FRAC_NATIVE` when block 9 is present, else the 4 health
+classes (a server that ignores the bit stays at 4; the client logs it after 10 health replies).
+The health-map legend and numbers are always the 4 health classes. `AUVPERF_DETECT` reports
+`mask_classes=<shown>/<asked> mask_colours=<distinct colours in the newest mask>`.
 
 `stats`: `mean_max_prob` = mean over pixels of the max softmax; `mean_entropy` = mean per-pixel
 softmax entropy in nats (0..ln C); `mean_p_bleached` = mean softmax of the BLEACHED class;
@@ -266,7 +315,8 @@ board, with these board-specific points (`board/reefwatch_board/reply.py`):
 
 * one response per request, in request order. `frame_id` is the id of the frame whose mask the
   response carries, which with the one-in-flight client is the request's own id;
-* the mask is the 4 health colours (as `--mask-classes 4`), at the request resolution;
+* the mask is the 4 health colours (as `--mask-classes 4`), at the request resolution, or the 7
+  native colours plus `CLASS_FRAC_NATIVE` for a request with `WANT_NATIVE_CLASSES` (7-class model);
 * `infer_ms` = the board's pre + DPU + post for that frame; `map_ms` = the last map fold;
   `total_ms` = request fully received -> response packed. `stats[3]` is the EWMA of
   `1000 / total_ms`;

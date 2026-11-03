@@ -134,6 +134,9 @@ class TestPrePost(unittest.TestCase):
         self.assertEqual(PP.SEVEN_NAMES, M.SEVEN_NAMES)
         self.assertEqual([tuple(int(c) for c in row) for row in M.HEALTH_PALETTE_RGBA],
                          [tuple(row) for row in PP.HEALTH_PALETTE_RGBA])
+        self.assertEqual(PP.SEVEN_HEX, tuple(M.SEVEN_HEX[n] for n in M.SEVEN_NAMES))
+        self.assertEqual([tuple(int(c) for c in row) for row in M.SEVEN_PALETTE_RGBA],
+                         list(PP.SEVEN_PALETTE_RGBA))
         self.assertEqual(PP.IMAGENET_MEAN, M.IMAGENET_MEAN)
         self.assertEqual(PP.IMAGENET_STD, M.IMAGENET_STD)
 
@@ -718,6 +721,10 @@ class TestReplyEndToEnd(unittest.TestCase):
             self.assertEqual(r["mask_rgba"], OTHER_RGBA * (320 * 180))
         self.assertEqual(replies[0]["server_info"]["kind"], "board")  # once per connection
         self.assertEqual(replies[0]["server_info"]["name"], "Board program (no model)")
+        si = replies[0]["server_info"]                                # the HUD legend tables
+        self.assertEqual(si["health_classes"]["names"], list(PP.HEALTH_NAMES))
+        self.assertEqual(si["native_classes"]["names"], list(PP.SEVEN_NAMES))
+        self.assertEqual(si["native_classes"]["colors"], list(PP.SEVEN_HEX))
         self.assertTrue(all("server_info" not in r for r in replies[1:]))
         c = app.reply_ctx.counters
         self.assertTrue(wait_for(lambda: c.streamed + c.skipped == n - n0 + 1))
@@ -833,6 +840,45 @@ class TestReplierUnit(unittest.TestCase):
         self.assertTrue(wait_for(lambda: ctx.counters.sent == 3))
         self.assertEqual((ctx.counters.streamed, ctx.counters.skipped, ctx.counters.reused),
                          (1, 1, 1))
+        r.close()
+
+    def test_native_classes_flag_per_request(self):
+        """WANT_NATIVE_CLASSES: 7 native colours + CLASS_FRAC_NATIVE on that response only;
+        without the bit the bytes are the health ones; streaming requests honour it too."""
+        ctx = self.ctx()
+        self.assertTrue(ctx.native_supported)
+        r = Replier(ctx, self.board, ("pair", 7))
+        ids = self.ids()
+        ids[:, :16] = 0                                               # 1/4 BLEACHED, 3/4 ALIVE
+        nat = np.bincount(ids.reshape(-1), minlength=7).astype(np.float32) / ids.size
+        health = np.array([0.75, 0.25, 0, 0], np.float32)
+        nf = P.FLAG_WANT_NATIVE_CLASSES
+        for fid, flags in ((1, 0), (2, nf), (3, nf | P.FLAG_STREAM_REPLIES)):
+            e = r.expect(fid, 64, 36, 2, flags, 0, time.perf_counter())
+            r.done(e, ids, health, None, 5.0, native_frac=nat)
+        plain, a, b = (read_response(self.client) for _ in range(3))
+        self.assertNotIn(P.BLOCK_CLASS_FRAC_NATIVE, plain["blocks"])
+        self.assertEqual(plain["mask_rgba"][:4], bytes(PP.HEALTH_PALETTE_RGBA[1]))  # BLEACHED white
+        self.assertEqual(plain["mask_rgba"][-4:], LIVE_RGBA)
+        for x in (a, b):
+            px = np.frombuffer(x["mask_rgba"], np.uint8).reshape(36, 64, 4)
+            self.assertEqual(tuple(px[0, 0]), PP.SEVEN_PALETTE_RGBA[0])        # BLEACHED yellow
+            self.assertEqual(tuple(px[0, -1]), PP.SEVEN_PALETTE_RGBA[2])       # ALIVE green
+            np.testing.assert_allclose(x["class_frac_native"], nat)
+            self.assertEqual(len(x["class_frac_native"]), 7)
+            np.testing.assert_allclose(x["class_frac"], health)                # still 4 health
+        r.close()
+
+    def test_native_classes_ignored_by_a_four_class_model(self):
+        ctx = ReplyContext(PP.to_health_table(4), None, log=self.logs.append)
+        self.assertFalse(ctx.native_supported)
+        r = Replier(ctx, self.board, ("pair", 8))
+        e = r.expect(1, 64, 36, 2, P.FLAG_WANT_NATIVE_CLASSES, 0, time.perf_counter())
+        r.done(e, np.zeros((36, 64), np.uint8), np.array([1, 0, 0, 0], np.float32), None, 5.0,
+               native_frac=np.array([1, 0, 0, 0], np.float32))
+        a = read_response(self.client)
+        self.assertNotIn(P.BLOCK_CLASS_FRAC_NATIVE, a["blocks"])
+        self.assertEqual(a["mask_rgba"], LIVE_RGBA * (64 * 36))
         r.close()
 
     def test_inference_failure_is_answered_with_error(self):

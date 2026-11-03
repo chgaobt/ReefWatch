@@ -178,6 +178,16 @@ Unreal (normal mode, one request in flight, 2 s deadline)        KV260 (--reply)
   with `--backend vart`). Requests without the flag keep `lockstep`; with neither
   `STREAM_REPLIES` nor `WANT_INFO` the bytes are unchanged. Unknown blocks are skipped by both
   parsers, so there is no version bump. Wire details: `PROTOCOL.md`, "Streaming replies".
+* **Native classes (`WANT_NATIVE_CLASSES`, request bit 5, 2026-11-02).** Unreal's "Mask classes:
+  7" setting sets the bit on each request. The writer then colours that response's mask with a
+  second precomputed palette (the 7 label-editor colours, indexed by native id: the same single
+  uint32 gather per pixel as the health palette, numpy only) and adds `CLASS_FRAC_NATIVE` (block
+  9: count + 7 float32), which the pipeline already has from its per-frame histogram, so the A53
+  pays nothing extra. Per request, under both `lockstep` and `processed`; the bit of the request
+  being answered decides. `CLASS_FRAC` stays the 4 health fractions and the map thread keeps
+  folding health ids. `SERVER_INFO` carries `health_classes` and `native_classes` (names + hex
+  colours) for the HUD legend. Requests without the bit get the health colours, byte for byte as
+  before; a 4-class model ignores the bit. Details: `PROTOCOL.md`, "Classes and palette".
 
 **Detection display on the HUD.** Unreal's Settings page has a "Detection display" row
 (`-detectmode=synced|realtime|realtime_mc`): **synced** = one request in flight, the board sets

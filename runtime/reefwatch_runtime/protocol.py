@@ -25,6 +25,12 @@ Streaming (2026-11): request flag STREAM_REPLIES (bit 3) asks the server to proc
 newest frame, drop what it cannot keep up with, and answer the frames it processed asynchronously;
 WANT_INFO (bit 4) asks for FRAME_INFO (block 7, every response) and SERVER_INFO (block 8, once per
 connection). Without either bit the bytes on the wire are exactly the pre-streaming ones.
+
+Native classes (2026-11): request flag WANT_NATIVE_CLASSES (bit 5) asks a server that knows the
+model's own classes (SERVER_INFO "native_classes") to colour MASK_RGBA in the native palette and
+to add CLASS_FRAC_NATIVE (block 9: count u32 + count float32). CLASS_FRAC stays the 4 health
+fractions and the map stays health. A server that ignores the bit sends no block 9; without the
+bit the bytes are unchanged.
 """
 from __future__ import annotations
 
@@ -66,6 +72,9 @@ FLAG_STREAM_REPLIES = 1 << 3
 #: add FRAME_INFO to every response and SERVER_INFO to the first response of the connection
 #: (implied by FLAG_STREAM_REPLIES); old servers ignore both bits
 FLAG_WANT_INFO = 1 << 4
+#: colour MASK_RGBA in the model's native classes and add CLASS_FRAC_NATIVE (block 9), if the
+#: server supports it (SERVER_INFO "native_classes"); old servers ignore the bit
+FLAG_WANT_NATIVE_CLASSES = 1 << 5
 # bits 8..11: water-look preset id (informational, ignored by the server; docs/WATER_LOOK.md)
 WATER_LOOK_SHIFT = 8
 WATER_LOOK_NAMES = {0: "unreported", 1: "training", 2: "tabuhan", 3: "clear", 4: "off", 15: "other"}
@@ -84,11 +93,16 @@ BLOCK_MINIMAP_PNG = 5
 BLOCK_ERROR = 6
 BLOCK_FRAME_INFO = 7
 BLOCK_SERVER_INFO = 8
+#: count u32 + float32[count]: pixel fraction of each native class, in SERVER_INFO
+#: "native_classes" order; only on a response whose mask is in native colours (WANT_NATIVE_CLASSES)
+BLOCK_CLASS_FRAC_NATIVE = 9
 
 BLOCK_NAMES = {BLOCK_MASK_RGBA: "MASK_RGBA", BLOCK_CLASS_FRAC: "CLASS_FRAC", BLOCK_STATS: "STATS",
                BLOCK_MAP_METRICS: "MAP_METRICS", BLOCK_MINIMAP_PNG: "MINIMAP_PNG",
                BLOCK_ERROR: "ERROR", BLOCK_FRAME_INFO: "FRAME_INFO",
-               BLOCK_SERVER_INFO: "SERVER_INFO"}
+               BLOCK_SERVER_INFO: "SERVER_INFO", BLOCK_CLASS_FRAC_NATIVE: "CLASS_FRAC_NATIVE"}
+#: most entries a CLASS_FRAC_NATIVE block may carry (the C++ client's limit)
+MAX_NATIVE_CLASSES = 32
 
 #: FRAME_INFO (block 7), 32 bytes. A reader must accept a longer block and ignore the tail.
 #:   0 frame_id u32      the frame the mask came from (= the header's frame_id)
@@ -171,6 +185,11 @@ def wants_info(flags) -> bool:
     return bool(int(flags) & (FLAG_WANT_INFO | FLAG_STREAM_REPLIES))
 
 
+def wants_native(flags) -> bool:
+    """Native-class mask + CLASS_FRAC_NATIVE requested (WANT_NATIVE_CLASSES)."""
+    return bool(int(flags) & FLAG_WANT_NATIVE_CLASSES)
+
+
 # --------------------------------------------------------------------------- v2 response
 def pack_frame_info(frame_id, world_time_s=0.0, queue_ms=0.0, done_ms=0.0, frames_rx=0,
                     frames_done=0, frames_skipped=0, streamed=False, reused=False) -> bytes:
@@ -189,9 +208,43 @@ def unpack_frame_info(buf) -> dict:
                 frames_rx=rx, frames_done=done, frames_skipped=skipped)
 
 
+def pack_class_frac_native(frac) -> bytes:
+    """CLASS_FRAC_NATIVE (block 9) body: count u32, then count little-endian float32."""
+    vals = [float(v) for v in frac]
+    if not 0 < len(vals) <= MAX_NATIVE_CLASSES:
+        raise ValueError(f"CLASS_FRAC_NATIVE needs 1..{MAX_NATIVE_CLASSES} entries, got {len(vals)}")
+    return struct.pack(f"<I{len(vals)}f", len(vals), *vals)
+
+
+def unpack_class_frac_native(buf) -> list:
+    if len(buf) < 4:
+        raise ValueError(f"CLASS_FRAC_NATIVE is {len(buf)} B")
+    (n,) = struct.unpack_from("<I", buf, 0)
+    if not 0 < n <= MAX_NATIVE_CLASSES or len(buf) != 4 + 4 * n:
+        raise ValueError(f"CLASS_FRAC_NATIVE count {n} does not fit {len(buf)} B")
+    return list(struct.unpack_from(f"<{n}f", buf, 4))
+
+
+def rgb_hex(rgb) -> str:
+    """(r, g, b[, a]) -> "#rrggbb"."""
+    return "#%02x%02x%02x" % tuple(int(c) for c in tuple(rgb)[:3])
+
+
+def class_table(names, colours) -> dict:
+    """A SERVER_INFO class table: {"names": [...], "colors": ["#rrggbb", ...]}, in the order of
+    the class ids / fractions it describes. `colours` rows are (r, g, b[, a])."""
+    names = [str(n) for n in names]
+    cols = [rgb_hex(c) for c in colours]
+    if len(names) != len(cols):
+        raise ValueError(f"{len(names)} names but {len(cols)} colours")
+    return {"names": names, "colors": cols}
+
+
 def pack_server_info(name, kind, **extra) -> bytes:
     """SERVER_INFO (block 8): one line of UTF-8 JSON. `name` is what the HUD shows ("PC GPU",
-    "KV260 DPU", ...); `kind` is "pc" or "board"; anything else is informational."""
+    "KV260 DPU", ...); `kind` is "pc" or "board". The HUD also reads "health_classes" and
+    "native_classes" (`class_table`; the latter only from a server that honours
+    WANT_NATIVE_CLASSES); anything else is informational."""
     d = dict(name=str(name), kind=str(kind))
     d.update(extra)
     return json.dumps(d, separators=(",", ":"), default=str).encode("utf-8")
@@ -263,4 +316,6 @@ def parse_response_v2(header_bytes, payload) -> dict:
         out["frame_info"] = unpack_frame_info(b[BLOCK_FRAME_INFO])
     if BLOCK_SERVER_INFO in b:
         out["server_info"] = json.loads(b[BLOCK_SERVER_INFO].decode("utf-8"))
+    if BLOCK_CLASS_FRAC_NATIVE in b:
+        out["class_frac_native"] = unpack_class_frac_native(b[BLOCK_CLASS_FRAC_NATIVE])
     return out

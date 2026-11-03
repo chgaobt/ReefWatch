@@ -116,11 +116,13 @@ class Pipeline(_Worker):
                 continue
             t1 = time.perf_counter()
             counts = np.bincount(ids.reshape(-1), minlength=nc)[:nc]
+            native_frac = (counts / float(ids.size)).astype(np.float32)   # nc values: free
             if not self.identity:
                 counts = np.bincount(self.to_health, weights=counts, minlength=4)
             frac = (counts[:4] / float(ids.size)).astype(np.float32)
             if f.reply is not None:          # --reply: hand the ids to the connection's writer
-                f.reply[0].done(f.reply[1], ids, frac, stats, (t1 - t0) * 1e3)
+                f.reply[0].done(f.reply[1], ids, frac, stats, (t1 - t0) * 1e3,
+                                native_frac=native_frac)
             if self.map_worker is not None and f.pose is not None:
                 health = ids if self.identity else np.take(self.to_health, ids)
                 self.map_worker.post(MapItem(health, f.pose, f.fov_h_deg, f.frame_id, f.reset_gen))
